@@ -5,7 +5,7 @@ import XCTest
 class CoreTests: XCTestCase {
     
     protocol Client {
-        func send(systemPrompt: String, userMessages: [String]) async throws -> String
+        func send(userMessages: [String]) async throws -> String
     }
     
     protocol Runner {
@@ -22,7 +22,7 @@ class CoreTests: XCTestCase {
         }
         
         func generateCode(from specs: String) async throws -> String {
-           let generated = try await client.send(systemPrompt: "", userMessages: [])
+           let generated = try await client.send(userMessages: [])
            _ = try runner.run("")
           return generated
         }
@@ -36,7 +36,7 @@ class CoreTests: XCTestCase {
     
     struct ClientStub: Client {
         let stub: Result<String, Error>
-        func send(systemPrompt: String, userMessages: [String]) async throws -> String {
+        func send(userMessages: [String]) async throws -> String {
             try stub.get()
         }
     }
@@ -62,7 +62,7 @@ class CoreTests: XCTestCase {
     
     func test_generateCode_deliversErrorOnRunnerError() async throws {
         struct DummyClient: Client {
-            func send(systemPrompt: String, userMessages: [String]) async throws -> String {
+            func send(userMessages: [String]) async throws -> String {
                 ""
             }
         }
