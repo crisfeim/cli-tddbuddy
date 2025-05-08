@@ -27,10 +27,10 @@ class CoreTests: XCTestCase {
         typealias Output = (generatedCode: String, output: Runner.Output)
         
         func generateCode(from specs: String) async throws -> Output {
-           let generated = try await client.send(userMessages: [])
-           let concatenated = concatenator(specs, generated)
-           let stdOut = try runner.run(concatenated)
-          return (generated, stdOut)
+            let generated = try await client.send(userMessages: [])
+            let concatenated = concatenator(specs, generated)
+            let stdOut = try runner.run(concatenated)
+            return (generated, stdOut)
         }
     }
     
@@ -60,7 +60,7 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
-       
+        
         let client = ClientStub(stub: .success(anyGeneratedCode()))
         let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
         let (generated, _) = try await generator.generateCode(from: anySpecs())
@@ -68,6 +68,7 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_deliversErrorOnClientError() async throws {
+        
         let client = ClientStub(stub: .failure(anyError()))
         let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
         do {
@@ -79,6 +80,7 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_deliversErrorOnRunnerError() async throws {
+        
         let runner = RunnerStub(stub: .failure(anyError()))
         let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
         do {
@@ -90,10 +92,11 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
+        
         let runner = RunnerStub(stub: .success(anyProcessOutput()))
         let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
         let (_, output) = try await generator.generateCode(from: anySpecs())
-    
+        
         anyProcessOutput() .* { expected in
             XCTAssertEqual(output.stderr, expected.stderr)
             XCTAssertEqual(output.stdout, expected.stdout)
@@ -102,6 +105,7 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_concatenatesCodeBeforeRunning() async throws {
+        
         var called = false
         let generator = makeSUT(concatenator: { _,_ in called = true ; return "" })
         let _ = try await generator.generateCode(from: anySpecs())
