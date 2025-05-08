@@ -1,39 +1,9 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 8/5/25.
 
 import XCTest
+import Core
 
 class CoreTests: XCTestCase {
-    
-    protocol Client {
-        func send(userMessages: [String]) async throws -> String
-    }
-    
-    protocol Runner {
-        typealias Output = (stdout: String, stderr: String, exitCode: Int)
-        func run(_ code: String) throws -> Output
-    }
-    
-    final class Generator {
-        typealias Concatenator = (String, String) -> String
-        let client: Client
-        let runner: Runner
-        let concatenator: Concatenator
-        init(client: Client, runner: Runner, concatenator: @escaping Concatenator) {
-            self.client = client
-            self.runner = runner
-            self.concatenator = concatenator
-        }
-        
-        typealias Output = (generatedCode: String, output: Runner.Output)
-        
-        func generateCode(from specs: String) async throws -> Output {
-            let generated = try await client.send(userMessages: [])
-            let concatenated = concatenator(specs, generated)
-            let stdOut = try runner.run(concatenated)
-            return (generated, stdOut)
-        }
-    }
-
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
         
         let client = ClientStub(stub: .success(anyGeneratedCode()))
