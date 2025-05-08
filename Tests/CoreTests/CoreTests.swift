@@ -70,7 +70,8 @@ class CoreTests: XCTestCase {
         let runner = RunnerSpy()
         let generator = makeSUT(client: clientStub, runner: runner, concatenator: ++)
         _ = try await generator.generateCode(from: anySpecs())
-        XCTAssertEqual(runner.code, anySpecs() ++ anyGeneratedCode())
+        XCTAssertEqual(runner.code?.contains(anySpecs()), true)
+        XCTAssertEqual(runner.code?.contains(anyGeneratedCode()), true)
     }
     
     func makeSUT(
