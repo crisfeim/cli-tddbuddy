@@ -47,7 +47,7 @@ class CoreTests: XCTestCase {
         }
     }
     
-    struct DummyClient: Client {
+    struct ClientDummy: Client {
         func send(userMessages: [String]) async throws -> String {
             ""
         }
@@ -80,7 +80,7 @@ class CoreTests: XCTestCase {
     
     func test_generateCode_deliversErrorOnRunnerError() async throws {
         let runner = RunnerStub(stub: .failure(NSError(domain: "any error", code: 0)))
-        let generator = Generator(client: DummyClient(), runner: runner, concatenator: ++)
+        let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
         do {
             let _ = try await generator.generateCode(from: "any specs")
             XCTFail()
@@ -91,7 +91,7 @@ class CoreTests: XCTestCase {
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
         let runner = RunnerStub(stub: .success(anyProcessOutput()))
-        let generator = Generator(client: DummyClient(), runner: runner, concatenator: ++)
+        let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
         let (_, output) = try await generator.generateCode(from: "any specs")
     
         anyProcessOutput() .* { expected in
@@ -125,7 +125,7 @@ class CoreTests: XCTestCase {
     }
     
     func makeSUT(
-        client: Client = DummyClient(),
+        client: Client = ClientDummy(),
         runner: Runner = RunnerDummy(),
         concatenator: @escaping Generator.Concatenator = (++)
     ) -> Generator {
