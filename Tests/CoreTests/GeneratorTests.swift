@@ -69,7 +69,7 @@ class GeneratorTests: XCTestCase {
     func makeSUT(
         client: Client = ClientDummy(),
         runner: Runner = RunnerDummy(),
-        concatenator: @escaping Generator.Concatenator = (++)
+        concatenator: @escaping Generator.Concatenator = anyConcatenator()
     ) -> Generator {
         Generator(
             client: client,
@@ -125,6 +125,10 @@ private extension GeneratorTests {
     
     private func anyError() -> NSError {
         NSError(domain: "any error", code: 0)
+    }
+    
+    static func anyConcatenator() -> Generator.Concatenator {
+        { _,_ in "" }
     }
 }
 
