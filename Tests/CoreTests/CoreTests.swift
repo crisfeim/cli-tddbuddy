@@ -48,15 +48,7 @@ class CoreTests: XCTestCase {
             XCTAssertEqual(output.exitCode, expected.exitCode)
         }
     }
-    
-    func test_generateCode_concatenatesCodeBeforeRunning() async throws {
-        
-        var called = false
-        let generator = makeSUT(concatenator: { _,_ in called = true ; return "" })
-        let _ = try await generator.generateCode(from: anySpecs())
-        XCTAssertTrue(called)
-    }
-    
+
     func test_generatedCode_usesConcatenatedCodeAsRunnerInput() async throws {
         class RunnerSpy: Runner {
             var code: String?
