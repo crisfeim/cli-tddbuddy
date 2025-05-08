@@ -7,7 +7,7 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
         
         let client = ClientStub(stub: .success(anyGeneratedCode()))
-        let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
+        let generator = makeSUT(client: client)
         let (generated, _) = try await generator.generateCode(from: anySpecs())
         XCTAssertEqual(generated, anyGeneratedCode())
     }
@@ -15,7 +15,7 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversErrorOnClientError() async throws {
         
         let client = ClientStub(stub: .failure(anyError()))
-        let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
+        let generator = makeSUT(client: client)
         do {
             let _ = try await generator.generateCode(from: anySpecs())
             XCTFail()
@@ -27,7 +27,7 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversErrorOnRunnerError() async throws {
         
         let runner = RunnerStub(stub: .failure(anyError()))
-        let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
+        let generator = makeSUT(runner: runner)
         do {
             let _ = try await generator.generateCode(from: anySpecs())
             XCTFail()
@@ -39,7 +39,7 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
         
         let runner = RunnerStub(stub: .success(anyProcessOutput()))
-        let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
+        let generator = makeSUT(runner: runner)
         let (_, output) = try await generator.generateCode(from: anySpecs())
         
         anyProcessOutput() .* { expected in
