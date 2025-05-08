@@ -61,38 +61,38 @@ class CoreTests: XCTestCase {
     
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
        
-        let client = ClientStub(stub: .success("any generated code"))
+        let client = ClientStub(stub: .success(anyGeneratedCode()))
         let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
-        let (generated, _) = try await generator.generateCode(from: "any specs")
-        XCTAssertEqual(generated, "any generated code")
+        let (generated, _) = try await generator.generateCode(from: anySpecs())
+        XCTAssertEqual(generated, anyGeneratedCode())
     }
     
     func test_generateCode_deliversErrorOnClientError() async throws {
-        let client = ClientStub(stub: .failure(NSError(domain: "any error", code: 0)))
+        let client = ClientStub(stub: .failure(anyError()))
         let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
         do {
-            let _ = try await generator.generateCode(from: "any specs")
+            let _ = try await generator.generateCode(from: anySpecs())
             XCTFail()
         } catch {
-            XCTAssertEqual(error as NSError, NSError(domain: "any error", code: 0))
+            XCTAssertEqual(error as NSError, anyError())
         }
     }
     
     func test_generateCode_deliversErrorOnRunnerError() async throws {
-        let runner = RunnerStub(stub: .failure(NSError(domain: "any error", code: 0)))
+        let runner = RunnerStub(stub: .failure(anyError()))
         let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
         do {
-            let _ = try await generator.generateCode(from: "any specs")
+            let _ = try await generator.generateCode(from: anySpecs())
             XCTFail()
         } catch {
-            XCTAssertEqual(error as NSError, NSError(domain: "any error", code: 0))
+            XCTAssertEqual(error as NSError, anyError())
         }
     }
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
         let runner = RunnerStub(stub: .success(anyProcessOutput()))
         let generator = Generator(client: ClientDummy(), runner: runner, concatenator: ++)
-        let (_, output) = try await generator.generateCode(from: "any specs")
+        let (_, output) = try await generator.generateCode(from: anySpecs())
     
         anyProcessOutput() .* { expected in
             XCTAssertEqual(output.stderr, expected.stderr)
@@ -104,7 +104,7 @@ class CoreTests: XCTestCase {
     func test_generateCode_concatenatesCodeBeforeRunning() async throws {
         var called = false
         let generator = makeSUT(concatenator: { _,_ in called = true ; return "" })
-        let _ = try await generator.generateCode(from: "any code")
+        let _ = try await generator.generateCode(from: anySpecs())
         XCTAssertTrue(called)
     }
     
@@ -117,11 +117,11 @@ class CoreTests: XCTestCase {
             }
         }
         
-        let clientStub = ClientStub(stub: .success("generated code"))
+        let clientStub = ClientStub(stub: .success(anyGeneratedCode()))
         let runner = RunnerSpy()
         let generator = makeSUT(client: clientStub, runner: runner, concatenator: ++)
-        _ = try await generator.generateCode(from: "any specs")
-        XCTAssertEqual(runner.code, "any specs\ngenerated code")
+        _ = try await generator.generateCode(from: anySpecs())
+        XCTAssertEqual(runner.code, anySpecs() ++ anyGeneratedCode())
     }
     
     func makeSUT(
@@ -137,6 +137,24 @@ class CoreTests: XCTestCase {
     }
 }
 
+private extension CoreTests {
+    func anyProcessOutput() -> Runner.Output {
+        ("", "", 0)
+    }
+    
+    private func anyGeneratedCode() -> String {
+        "any generated code"
+    }
+    
+    private func anySpecs() -> String {
+        "any specs"
+    }
+    
+    private func anyError() -> NSError {
+        NSError(domain: "any error", code: 0)
+    }
+}
+
 
 infix operator ++
 func ++(lhs: String, rhs: String) -> String {
@@ -149,10 +167,4 @@ func .*<T>(lhs: T, rhs: (inout T) -> Void) -> T {
     var copy = lhs
     rhs(&copy)
     return copy
-}
-
-private extension CoreTests {
-    func anyProcessOutput() -> Runner.Output {
-        ("", "", 0)
-    }
 }
