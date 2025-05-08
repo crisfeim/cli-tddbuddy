@@ -9,7 +9,8 @@ class CoreTests: XCTestCase {
     }
     
     protocol Runner {
-        func run(_ code: String) throws -> String
+        typealias Output = (stdout: String, stderr: String, exitCode: Int)
+        func run(_ code: String) throws -> Output
     }
     
     final class Generator {
@@ -21,7 +22,7 @@ class CoreTests: XCTestCase {
             self.runner = runner
         }
         
-        typealias Output = (generatedCode: String, stdOut: String)
+        typealias Output = (generatedCode: String, output: Runner.Output)
         
         func generateCode(from specs: String) async throws -> Output {
            let generated = try await client.send(userMessages: [])
@@ -31,8 +32,8 @@ class CoreTests: XCTestCase {
     }
     
     struct RunnerDummy: Runner {
-        func run(_ code: String) throws -> String {
-            ""
+        func run(_ code: String) throws -> Output {
+            ("","",0)
         }
     }
     
@@ -49,8 +50,8 @@ class CoreTests: XCTestCase {
         }
     }
     struct RunnerStub: Runner {
-        let stub: Result<String, Error>
-        func run(_ code: String) throws -> String {
+        let stub: Result<Output, Error>
+        func run(_ code: String) throws -> Output {
             try stub.get()
         }
         
@@ -87,9 +88,11 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
-        let runner = RunnerStub(stub: .success("any output"))
+        let runner = RunnerStub(stub: .success(("", "", 0)))
         let generator = Generator(client: DummyClient(), runner: runner)
         let (_, output) = try await generator.generateCode(from: "any specs")
-        XCTAssertEqual(output, "any output")
+        XCTAssertEqual(output.stderr, "")
+        XCTAssertEqual(output.stdout, "")
+        XCTAssertEqual(output.exitCode, 0)
     }
 }
