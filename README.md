@@ -24,13 +24,15 @@ The CLI should accept the following inputs:
 
 ![](subsystem.png)
 
-System.generate(specs) → (GeneratedCode, Stdout/Stderr)
-→ LLM.send(specs) → GeneratedCode
-→ Concatenator.concatenate(GeneratedCode, Specs) → Concatenated
-→ CodeRunner.run(Concatenated) → Stdout/Stderr
-→ (GeneratedCode, Stdout/Stderr)
-    
-As I need to allow user to control more parameters (input url, output url, max iteration counts), I think we should have more actors and a more high level coordinator:
+```
+System.generateCodeFrom(specs) → (GeneratedCode, Stdout/Stderr)
+    → LLM.send(specs) → GeneratedCode
+    → Concatenator.concatenate(GeneratedCode, Specs) → Concatenated
+    → CodeRunner.run(Concatenated) → Stdout/Stderr
+    → Exit
+```
+
+More control is needed (input & output urls, max iteration count), so we'll probably need more components and a higher level coordinator:
 
 ![](system.png)
 
