@@ -14,18 +14,21 @@ class CoreTests: XCTestCase {
     }
     
     final class Generator {
+        typealias Concatenator = (String, String) -> String
         let client: Client
         let runner: Runner
-        
-        init(client: Client, runner: Runner) {
+        let concatenator: Concatenator
+        init(client: Client, runner: Runner, concatenator: @escaping Concatenator) {
             self.client = client
             self.runner = runner
+            self.concatenator = concatenator
         }
         
         typealias Output = (generatedCode: String, output: Runner.Output)
         
         func generateCode(from specs: String) async throws -> Output {
            let generated = try await client.send(userMessages: [])
+           let concatenated = concatenator(generated, specs)
            let stdOut = try runner.run("")
           return (generated, stdOut)
         }
@@ -59,14 +62,14 @@ class CoreTests: XCTestCase {
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
        
         let client = ClientStub(stub: .success("any generated code"))
-        let generator = Generator(client: client, runner: RunnerDummy())
+        let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
         let (generated, _) = try await generator.generateCode(from: "any specs")
         XCTAssertEqual(generated, "any generated code")
     }
     
     func test_generateCode_deliversErrorOnClientError() async throws {
         let client = ClientStub(stub: .failure(NSError(domain: "any error", code: 0)))
-        let generator = Generator(client: client, runner: RunnerDummy())
+        let generator = Generator(client: client, runner: RunnerDummy(), concatenator: ++)
         do {
             let _ = try await generator.generateCode(from: "any specs")
             XCTFail()
@@ -77,7 +80,7 @@ class CoreTests: XCTestCase {
     
     func test_generateCode_deliversErrorOnRunnerError() async throws {
         let runner = RunnerStub(stub: .failure(NSError(domain: "any error", code: 0)))
-        let generator = Generator(client: DummyClient(), runner: runner)
+        let generator = Generator(client: DummyClient(), runner: runner, concatenator: ++)
         do {
             let _ = try await generator.generateCode(from: "any specs")
             XCTFail()
@@ -88,7 +91,7 @@ class CoreTests: XCTestCase {
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
         let runner = RunnerStub(stub: .success(anyProcessOutput()))
-        let generator = Generator(client: DummyClient(), runner: runner)
+        let generator = Generator(client: DummyClient(), runner: runner, concatenator: ++)
         let (_, output) = try await generator.generateCode(from: "any specs")
     
         anyProcessOutput() .* { expected in
@@ -97,8 +100,32 @@ class CoreTests: XCTestCase {
             XCTAssertEqual(output.exitCode, expected.exitCode)
         }
     }
+    
+    func test_generateCode_concatenatesCodeBeforeRunning() async throws {
+        
+        var called = false
+        let concatenator = { (lhs: String, rhs: String) in
+           called = true
+           return "any string"
+        }
+        
+    
+        let generator = Generator(
+            client: DummyClient(),
+            runner: RunnerDummy(),
+            concatenator: concatenator
+        )
+        
+        let _ = try await generator.generateCode(from: "any code")
+        XCTAssertTrue(called)
+    }
 }
 
+
+infix operator ++
+func ++(lhs: String, rhs: String) -> String {
+    lhs + "\n" + rhs
+}
 
 infix operator .*
 @discardableResult
