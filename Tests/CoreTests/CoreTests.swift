@@ -54,7 +54,6 @@ class CoreTests: XCTestCase {
         func run(_ code: String) throws -> Output {
             try stub.get()
         }
-        
     }
     
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
@@ -88,11 +87,29 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
-        let runner = RunnerStub(stub: .success(("", "", 0)))
+        let runner = RunnerStub(stub: .success(anyProcessOutput()))
         let generator = Generator(client: DummyClient(), runner: runner)
         let (_, output) = try await generator.generateCode(from: "any specs")
-        XCTAssertEqual(output.stderr, "")
-        XCTAssertEqual(output.stdout, "")
-        XCTAssertEqual(output.exitCode, 0)
+    
+        anyProcessOutput() .* { expected in
+            XCTAssertEqual(output.stderr, expected.stderr)
+            XCTAssertEqual(output.stdout, expected.stdout)
+            XCTAssertEqual(output.exitCode, expected.exitCode)
+        }
+    }
+}
+
+
+infix operator .*
+@discardableResult
+func .*<T>(lhs: T, rhs: (inout T) -> Void) -> T {
+    var copy = lhs
+    rhs(&copy)
+    return copy
+}
+
+private extension CoreTests {
+    func anyProcessOutput() -> Runner.Output {
+        ("", "", 0)
     }
 }
