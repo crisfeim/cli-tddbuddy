@@ -33,32 +33,7 @@ class CoreTests: XCTestCase {
             return (generated, stdOut)
         }
     }
-    
-    struct RunnerDummy: Runner {
-        func run(_ code: String) throws -> Output {
-            ("","",0)
-        }
-    }
-    
-    struct ClientStub: Client {
-        let stub: Result<String, Error>
-        func send(userMessages: [String]) async throws -> String {
-            try stub.get()
-        }
-    }
-    
-    struct ClientDummy: Client {
-        func send(userMessages: [String]) async throws -> String {
-            ""
-        }
-    }
-    struct RunnerStub: Runner {
-        let stub: Result<Output, Error>
-        func run(_ code: String) throws -> Output {
-            try stub.get()
-        }
-    }
-    
+
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
         
         let client = ClientStub(stub: .success(anyGeneratedCode()))
@@ -141,6 +116,37 @@ class CoreTests: XCTestCase {
     }
 }
 
+// MARK: - Fakes
+private extension CoreTests {
+    
+    struct RunnerDummy: Runner {
+        func run(_ code: String) throws -> Output {
+            ("","",0)
+        }
+    }
+    
+    struct ClientStub: Client {
+        let stub: Result<String, Error>
+        func send(userMessages: [String]) async throws -> String {
+            try stub.get()
+        }
+    }
+    
+    struct ClientDummy: Client {
+        func send(userMessages: [String]) async throws -> String {
+            ""
+        }
+    }
+    struct RunnerStub: Runner {
+        let stub: Result<Output, Error>
+        func run(_ code: String) throws -> Output {
+            try stub.get()
+        }
+    }
+    
+}
+
+// MARK: - Factories
 private extension CoreTests {
     func anyProcessOutput() -> Runner.Output {
         ("", "", 0)
