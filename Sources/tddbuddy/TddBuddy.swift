@@ -8,7 +8,8 @@ import ArgumentParser
 
 @main
 struct TddBuddy: ParsableCommand {
-    mutating func run() throws {
+    mutating func run() async throws {
         print("Hello, world!")
     }
 }
+
