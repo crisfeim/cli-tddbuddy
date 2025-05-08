@@ -27,7 +27,7 @@ class CoreTests: XCTestCase {
         }
     }
     
-    func test_generate_deliversCodeOnClientSuccess() async throws {
+    func test_generateCode_deliversCodeOnClientSuccess() async throws {
        
         let client = ClientStub(stub: .success("any generated code"))
         let generator = Generator(client: client)
@@ -35,7 +35,7 @@ class CoreTests: XCTestCase {
         XCTAssertEqual(generated, "any generated code")
     }
     
-    func test_generate_deliversErrorOnClientError() async throws {
+    func test_generateCode_deliversErrorOnClientError() async throws {
         let client = ClientStub(stub: .failure(NSError(domain: "any error", code: 0)))
         let generator = Generator(client: client)
         do {
@@ -45,5 +45,6 @@ class CoreTests: XCTestCase {
             XCTAssertEqual(error as NSError, NSError(domain: "any error", code: 0))
         }
     }
+    
    
 }
