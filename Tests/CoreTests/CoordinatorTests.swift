@@ -23,8 +23,8 @@ class CoordinatorTests: XCTestCase {
             self.reader = reader
         }
         
-        func generateCode(sourceURL: URL) async throws {
-            let _ = try reader.read(sourceURL)
+        func generateAndSaveCode(specsFileURL: URL) async throws {
+            let _ = try reader.read(specsFileURL)
         }
     }
     
@@ -38,7 +38,7 @@ class CoordinatorTests: XCTestCase {
         let reader = FileReaderStub(result: .failure(anyError()))
         let coordinator = Coordinator(reader: reader)
         do {
-            try await coordinator.generateCode(sourceURL: anyURL())
+            try await coordinator.generateAndSaveCode(specsFileURL: anyURL())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
