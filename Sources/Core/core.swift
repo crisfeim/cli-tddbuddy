@@ -9,6 +9,12 @@ public protocol Runner {
     func run(_ code: String) throws -> Output
 }
 
+
+infix operator ++
+public func ++(lhs: String, rhs: String) -> String {
+    lhs + "\n" + rhs
+}
+
 public final class Generator {
     
     public typealias Concatenator = (String, String) -> String
@@ -18,7 +24,7 @@ public final class Generator {
     let runner: Runner
     let concatenator: Concatenator
     
-    public init(client: Client, runner: Runner, concatenator: @escaping Concatenator) {
+    public init(client: Client, runner: Runner, concatenator: @escaping Concatenator = (++)) {
         self.client = client
         self.runner = runner
         self.concatenator = concatenator

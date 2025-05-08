@@ -132,12 +132,6 @@ private extension GeneratorTests {
     }
 }
 
-
-infix operator ++
-func ++(lhs: String, rhs: String) -> String {
-    lhs + "\n" + rhs
-}
-
 infix operator .*
 @discardableResult
 func .*<T>(lhs: T, rhs: (inout T) -> Void) -> T {
