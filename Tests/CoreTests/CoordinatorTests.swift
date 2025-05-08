@@ -28,13 +28,7 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
-    func test_generate_deliversErrorOnReaderError() async throws {
-        struct FileReaderStub: FileReader {
-            let result: Result<String, Error>
-            func read(_: URL) throws -> String {
-                try result.get()
-            }
-        }
+    func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
         let reader = FileReaderStub(result: .failure(anyError()))
         let coordinator = Coordinator(reader: reader)
         do {
@@ -42,6 +36,23 @@ class CoordinatorTests: XCTestCase {
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
+        }
+    }
+    
+    func test_generateAndSaveCode_deliversNoErrorOnReaderSuccess() async throws {
+        let reader = FileReaderStub(result: .success(""))
+        let coordinator = Coordinator(reader: reader)
+        do {
+            try await coordinator.generateAndSaveCode(specsFileURL: anyURL())
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    struct FileReaderStub: FileReader {
+        let result: Result<String, Error>
+        func read(_: URL) throws -> String {
+            try result.get()
         }
     }
 }
