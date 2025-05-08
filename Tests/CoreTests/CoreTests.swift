@@ -20,29 +20,23 @@ class CoreTests: XCTestCase {
         }
     }
     
-    func test_generate_deliversCodeOnClientSuccess() async throws {
-        struct ClientStub: Client {
-            let stub: String
-            func send(systemPrompt: String, userMessages: [String]) async throws -> String {
-                return stub
-            }
+    struct ClientStub: Client {
+        let stub: Result<String, Error>
+        func send(systemPrompt: String, userMessages: [String]) async throws -> String {
+            try stub.get()
         }
-        
-        let client = ClientStub(stub: "any generated code")
+    }
+    
+    func test_generate_deliversCodeOnClientSuccess() async throws {
+       
+        let client = ClientStub(stub: .success("any generated code"))
         let generator = Generator(client: client)
         let generated = try await generator.generateCode(from: "any specs")
         XCTAssertEqual(generated, "any generated code")
     }
     
     func test_generate_deliversErrorOnClientError() async throws {
-        struct ClientStub: Client {
-            let stub: NSError
-            func send(systemPrompt: String, userMessages: [String]) async throws -> String {
-                throw stub
-            }
-        }
-        
-        let client = ClientStub(stub: NSError(domain: "any error", code: 0))
+        let client = ClientStub(stub: .failure(NSError(domain: "any error", code: 0)))
         let generator = Generator(client: client)
         do {
             let _ = try await generator.generateCode(from: "any specs")
