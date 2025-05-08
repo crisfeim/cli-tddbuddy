@@ -58,12 +58,7 @@ class CoordinatorTests: XCTestCase {
     }
     
     func test_generateAndSaveCode_deliversErrorOnGeneratorError() async throws {
-        struct GeneratorStub: Generator {
-            let result: Result<Generator.Output, Error>
-            func generateCode(from specs: String) async throws -> Output {
-                try result.get()
-            }
-        }
+      
         
         let generator = GeneratorStub(result: .failure(anyError()))
         let coordinatior = Coordinator(reader: FileReaderDummy(), generator: generator)
@@ -72,6 +67,23 @@ class CoordinatorTests: XCTestCase {
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
+        }
+    }
+    
+    func test_generateAndSaveCode_deliversNoErrorOnGeneratorSuccess() async throws {
+        let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
+        let coordinatior = Coordinator(reader: FileReaderDummy(), generator: generator)
+        do {
+            try await coordinatior.generateAndSaveCode(specsFileURL: anyURL())
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    struct GeneratorStub: Generator {
+        let result: Result<Generator.Output, Error>
+        func generateCode(from specs: String) async throws -> Output {
+            try result.get()
         }
     }
     
@@ -92,5 +104,11 @@ class CoordinatorTests: XCTestCase {
         func generateCode(from specs: String) async throws -> Output {
             ("", output: ("", "", 0))
         }
+    }
+}
+
+private extension CoordinatorTests {
+    func anyGeneratedOutput() -> Generator.Output {
+        ("", output: ("", "", 0))
     }
 }
