@@ -28,8 +28,8 @@ class CoreTests: XCTestCase {
         
         func generateCode(from specs: String) async throws -> Output {
            let generated = try await client.send(userMessages: [])
-           let concatenated = concatenator(generated, specs)
-           let stdOut = try runner.run("")
+           let concatenated = concatenator(specs, generated)
+           let stdOut = try runner.run(concatenated)
           return (generated, stdOut)
         }
     }
@@ -102,22 +102,38 @@ class CoreTests: XCTestCase {
     }
     
     func test_generateCode_concatenatesCodeBeforeRunning() async throws {
-        
         var called = false
-        let concatenator = { (lhs: String, rhs: String) in
-           called = true
-           return "any string"
-        }
-        
-    
-        let generator = Generator(
-            client: DummyClient(),
-            runner: RunnerDummy(),
-            concatenator: concatenator
-        )
-        
+        let generator = makeSUT(concatenator: { _,_ in called = true ; return "" })
         let _ = try await generator.generateCode(from: "any code")
         XCTAssertTrue(called)
+    }
+    
+    func test_generatedCode_usesConcatenatedCodeAsRunnerInput() async throws {
+        class RunnerSpy: Runner {
+            var code: String?
+            func run(_ code: String) throws -> Runner.Output {
+                self.code = code
+                return ("", "", 0)
+            }
+        }
+        
+        let clientStub = ClientStub(stub: .success("generated code"))
+        let runner = RunnerSpy()
+        let generator = makeSUT(client: clientStub, runner: runner, concatenator: ++)
+        _ = try await generator.generateCode(from: "any specs")
+        XCTAssertEqual(runner.code, "any specs\ngenerated code")
+    }
+    
+    func makeSUT(
+        client: Client = DummyClient(),
+        runner: Runner = RunnerDummy(),
+        concatenator: @escaping Generator.Concatenator = (++)
+    ) -> Generator {
+        Generator(
+            client: client,
+            runner: runner,
+            concatenator: concatenator
+        )
     }
 }
 
