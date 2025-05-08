@@ -3,7 +3,7 @@
 import XCTest
 import Core
 
-class CoreTests: XCTestCase {
+class GeneratorTests: XCTestCase {
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
         
         let client = ClientStub(stub: .success(anyGeneratedCode()))
@@ -80,7 +80,7 @@ class CoreTests: XCTestCase {
 }
 
 // MARK: - Fakes
-private extension CoreTests {
+private extension GeneratorTests {
     
     struct RunnerDummy: Runner {
         func run(_ code: String) throws -> Output {
@@ -110,7 +110,7 @@ private extension CoreTests {
 }
 
 // MARK: - Factories
-private extension CoreTests {
+private extension GeneratorTests {
     func anyProcessOutput() -> Runner.Output {
         ("", "", 0)
     }
