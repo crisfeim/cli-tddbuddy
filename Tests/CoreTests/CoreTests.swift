@@ -33,5 +33,23 @@ class CoreTests: XCTestCase {
         let generated = try await generator.generateCode(from: "any specs")
         XCTAssertEqual(generated, "any generated code")
     }
+    
+    func test_generate_deliversErrorOnClientError() async throws {
+        struct ClientStub: Client {
+            let stub: NSError
+            func send(systemPrompt: String, userMessages: [String]) async throws -> String {
+                throw stub
+            }
+        }
+        
+        let client = ClientStub(stub: NSError(domain: "any error", code: 0))
+        let generator = Generator(client: client)
+        do {
+            let _ = try await generator.generateCode(from: "any specs")
+            XCTFail()
+        } catch {
+            XCTAssertEqual(error as NSError, NSError(domain: "any error", code: 0))
+        }
+    }
    
 }
