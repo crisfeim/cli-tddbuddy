@@ -12,21 +12,31 @@ class CoordinatorTests: XCTestCase {
         NSError(domain: "", code: 0)
     }
     
-    typealias FileReader = (URL) throws -> String
+    protocol FileReader {
+        func read(_ url: URL) throws -> String
+    }
+    
     class Coordinator {
         let reader: FileReader
         
-        init(reader: @escaping FileReader) {
+        init(reader: FileReader) {
             self.reader = reader
         }
         
         func generateCode(sourceURL: URL) async throws {
-            let _ = try reader(sourceURL)
+            let _ = try reader.read(sourceURL)
         }
     }
     
     func test_generate_deliversErrorOnReaderError() async throws {
-        let coordinator = Coordinator(reader: { (_:URL) in throw self.anyError() })
+        struct FileReaderStub: FileReader {
+            let result: Result<String, Error>
+            func read(_: URL) throws -> String {
+                try result.get()
+            }
+        }
+        let reader = FileReaderStub(result: .failure(anyError()))
+        let coordinator = Coordinator(reader: reader)
         do {
             try await coordinator.generateCode(sourceURL: anyURL())
             XCTFail()
