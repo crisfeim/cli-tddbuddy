@@ -2,6 +2,14 @@
 import Foundation
 import Core
 
+enum Logger {
+    static func log(_ message: String) {
+        #if DEBUG
+        print(message)
+        #endif
+    }
+}
+
 final class LoggerDecorator<T> {
     let decoratee: T
     
@@ -13,14 +21,14 @@ final class LoggerDecorator<T> {
 // MARK: - Client
 extension LoggerDecorator: Client where T: Client {
     func send(systemPrompt: String, userMessage: String) async throws -> String {
-        print("🟡 [Client] Sending:")
-        print("System Prompt:\n\(systemPrompt)")
-        print("User Message:\n\(userMessage)")
+        Logger.log("🟡 [Client] Sending:")
+        Logger.log("System Prompt:\n\(systemPrompt)")
+        Logger.log("User Message:\n\(userMessage)")
 
         let response = try await decoratee.send(systemPrompt: systemPrompt, userMessage: userMessage)
 
-        print("🟢 [Client] Response:")
-        print(response)
+        Logger.log("🟢 [Client] Response:")
+        Logger.log(response)
 
         return response
     }
@@ -29,15 +37,15 @@ extension LoggerDecorator: Client where T: Client {
 // MARK: - Runner
 extension LoggerDecorator: Runner where T: Runner {
     func run(_ code: String) throws -> ProcessOutput {
-        print("🟡 [Runner] Running code:")
-        print(code)
+        Logger.log("🟡 [Runner] Running code:")
+        Logger.log(code)
 
         let result = try decoratee.run(code)
 
-        print("🟢 [Runner] Output:")
-        print("stdout: \(result.stdout)")
-        print("stderr: \(result.stderr)")
-        print("exitCode: \(result.exitCode)")
+        Logger.log("🟢 [Runner] Output:")
+        Logger.log("stdout: \(result.stdout)")
+        Logger.log("stderr: \(result.stderr)")
+        Logger.log("exitCode: \(result.exitCode)")
 
         return result
     }
@@ -46,24 +54,24 @@ extension LoggerDecorator: Runner where T: Runner {
 // MARK: - Persistor
 extension LoggerDecorator: Persistor where T: Persistor {
     func persist(_ string: String, outputURL: URL) throws {
-        print("🟡 [Persistor] Saving to \(outputURL.path):")
-        print(string)
+        Logger.log("🟡 [Persistor] Saving to \(outputURL.path):")
+        Logger.log(string)
 
         try decoratee.persist(string, outputURL: outputURL)
 
-        print("🟢 [Persistor] Save successful")
+        Logger.log("🟢 [Persistor] Save successful")
     }
 }
 
 // MARK: - FileReader
 extension LoggerDecorator: FileReader where T: FileReader {
     func read(_ url: URL) throws -> String {
-        print("🟡 [FileReader] Reading from: \(url.path)")
+        Logger.log("🟡 [FileReader] Reading from: \(url.path)")
 
         let contents = try decoratee.read(url)
 
-        print("🟢 [FileReader] Contents read:")
-        print(contents)
+        Logger.log("🟢 [FileReader] Contents read:")
+        Logger.log(contents)
 
         return contents
     }
@@ -72,16 +80,16 @@ extension LoggerDecorator: FileReader where T: FileReader {
 // MARK: - Generator
 extension LoggerDecorator: Coordinator.Generator where T: Coordinator.Generator {
     func generateCode(from specs: String) async throws -> Output {
-        print("🟡 [Generator] Generating code from specs:")
-        print(specs)
+        Logger.log("🟡 [Generator] Generating code from specs:")
+        Logger.log(specs)
 
         let output = try await decoratee.generateCode(from: specs)
 
-        print("🟢 [Generator] Generated Code:")
-        print(output.generatedCode)
-        print("🟢 [Generator] Stdout:\n\(output.procesOutput.stdout)")
-        print("🟠 [Generator] Stderr:\n\(output.procesOutput.stderr)")
-        print("🔚 Exit Code: \(output.procesOutput.exitCode)")
+        Logger.log("🟢 [Generator] Generated Code:")
+        Logger.log(output.generatedCode)
+        Logger.log("🟢 [Generator] Stdout:\n\(output.procesOutput.stdout)")
+        Logger.log("🟠 [Generator] Stderr:\n\(output.procesOutput.stderr)")
+        Logger.log("🔚 Exit Code: \(output.procesOutput.exitCode)")
 
         return output
     }
