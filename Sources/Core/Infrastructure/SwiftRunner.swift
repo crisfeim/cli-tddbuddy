@@ -1,7 +1,6 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 9/5/25.
 
-
-import XCTest
+import Foundation
 
 public struct SwiftRunner: Runner {
     private let fm = FileManager.default
