@@ -4,48 +4,34 @@ import Core
 
 enum Logger {
     static func log(_ message: String) {
-        #if DEBUG
         print(message)
-        #endif
     }
 }
 
-final class LoggerDecorator<T> {
+public final class LoggerDecorator<T> {
     let decoratee: T
     
-    init(_ decoratee: T) {
+    public init(_ decoratee: T) {
         self.decoratee = decoratee
     }
 }
 
 // MARK: - Client
 extension LoggerDecorator: Client where T: Client {
-    func send(systemPrompt: String, userMessage: String) async throws -> String {
-        Logger.log("🟡 [Client] Sending:")
-        Logger.log("System Prompt:\n\(systemPrompt)")
-        Logger.log("User Message:\n\(userMessage)")
-
+    public func send(systemPrompt: String, userMessage: String) async throws -> String {
+        Logger.log("🟡 [Client] Sending specs")
         let response = try await decoratee.send(systemPrompt: systemPrompt, userMessage: userMessage)
-
-        Logger.log("🟢 [Client] Response:")
-        Logger.log(response)
-
+        Logger.log("🟢 [Client] Received Response")
         return response
     }
 }
 
 // MARK: - Runner
 extension LoggerDecorator: Runner where T: Runner {
-    func run(_ code: String) throws -> ProcessOutput {
-        Logger.log("🟡 [Runner] Running code:")
-        Logger.log(code)
-
+    public func run(_ code: String) throws -> ProcessOutput {
+        Logger.log("🟡 [Runner] Running code")
         let result = try decoratee.run(code)
-
-        Logger.log("🟢 [Runner] Output:")
-        Logger.log("stdout: \(result.stdout)")
-        Logger.log("stderr: \(result.stderr)")
-        Logger.log("exitCode: \(result.exitCode)")
+        Logger.log("🟢 [Runner] Code run")
 
         return result
     }
@@ -53,25 +39,19 @@ extension LoggerDecorator: Runner where T: Runner {
 
 // MARK: - Persistor
 extension LoggerDecorator: Persistor where T: Persistor {
-    func persist(_ string: String, outputURL: URL) throws {
+    public func persist(_ string: String, outputURL: URL) throws {
         Logger.log("🟡 [Persistor] Saving to \(outputURL.path):")
-        Logger.log(string)
-
         try decoratee.persist(string, outputURL: outputURL)
-
         Logger.log("🟢 [Persistor] Save successful")
     }
 }
 
 // MARK: - FileReader
 extension LoggerDecorator: FileReader where T: FileReader {
-    func read(_ url: URL) throws -> String {
+    public func read(_ url: URL) throws -> String {
         Logger.log("🟡 [FileReader] Reading from: \(url.path)")
-
         let contents = try decoratee.read(url)
-
-        Logger.log("🟢 [FileReader] Contents read:")
-        Logger.log(contents)
+        Logger.log("🟢 [FileReader] Contents read")
 
         return contents
     }
@@ -79,16 +59,10 @@ extension LoggerDecorator: FileReader where T: FileReader {
 
 // MARK: - Generator
 extension LoggerDecorator: Coordinator.Generator where T: Coordinator.Generator {
-    func generateCode(from specs: String) async throws -> Output {
-        Logger.log("🟡 [Generator] Generating code from specs:")
-        Logger.log(specs)
-
+    public func generateCode(from specs: String) async throws -> Output {
+        Logger.log("🟡 [Generator] Generating code from specs")
         let output = try await decoratee.generateCode(from: specs)
-
-        Logger.log("🟢 [Generator] Generated Code:")
-        Logger.log(output.generatedCode)
-        Logger.log("🟢 [Generator] Stdout:\n\(output.procesOutput.stdout)")
-        Logger.log("🟠 [Generator] Stderr:\n\(output.procesOutput.stderr)")
+        Logger.log("🟢 [Generator] Code Generated with exit code: \(output.procesOutput.exitCode)")
         Logger.log("🔚 Exit Code: \(output.procesOutput.exitCode)")
 
         return output

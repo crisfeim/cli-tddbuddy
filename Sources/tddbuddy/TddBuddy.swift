@@ -15,15 +15,11 @@ struct TDDBuddy: AsyncParsableCommand {
     var iterations: Int = 5
 
     func run() async throws {
-        let client = OllamaClient()
-        let runner = SwiftRunner()
-        let persistor = FilePersistor()
+        let client = LoggerDecorator(OllamaClient())
+        let runner = LoggerDecorator(SwiftRunner())
+        let persistor = LoggerDecorator(FilePersistor())
         let iterator = Iterator()
-        let generator = Generator(
-            systemPrompt: TDDBuddy.systemPrompt,
-            client: client,
-            runner: runner
-        )
+        let generator = LoggerDecorator(Generator(systemPrompt: TDDBuddy.systemPrompt, client: client, runner: runner))
         
         let coordinator = Coordinator(
             reader: FileManager.default,

@@ -2,6 +2,7 @@
 
 import XCTest
 import Core
+import tddbuddy
 
 class IntegrationTests: XCTestCase {
     func test_adder_generation() async throws {

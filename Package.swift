@@ -20,6 +20,6 @@ let package = Package(
             ]
         ),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
-        .testTarget(name: "CoreE2ETests", dependencies: ["Core"], resources: [.copy("inputs")])
+        .testTarget(name: "CoreE2ETests", dependencies: ["Core", "tddbuddy"], resources: [.copy("inputs")])
     ]
 )
