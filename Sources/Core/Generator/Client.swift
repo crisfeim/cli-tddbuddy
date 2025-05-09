@@ -2,5 +2,5 @@
 
 
 public protocol Client {
-    func send(userMessages: [String]) async throws -> String
+    func send(userMessage: String) async throws -> String
 }

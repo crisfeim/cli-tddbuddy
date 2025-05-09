@@ -66,6 +66,21 @@ class GeneratorTests: XCTestCase {
         XCTAssertEqual(runner.code?.contains(anyGeneratedCode()), true)
     }
     
+    func test_generateCode_sendsSpecsToClient() async throws {
+        class ClientSpy: Client {
+            var sentMessage: String?
+            func send(userMessage: String) async throws -> String {
+                sentMessage = userMessage
+                return ""
+            }
+        }
+        
+        let clientSpy = ClientSpy()
+        let sut = makeSUT(client: clientSpy)
+        _ = try await sut.generateCode(from: anySpecs())
+        XCTAssertEqual(clientSpy.sentMessage, anySpecs())
+    }
+    
     func makeSUT(
         client: Client = ClientDummy(),
         runner: Runner = RunnerDummy(),
@@ -90,13 +105,13 @@ private extension GeneratorTests {
     
     struct ClientStub: Client {
         let stub: Result<String, Error>
-        func send(userMessages: [String]) async throws -> String {
+        func send(userMessage: String) async throws -> String {
             try stub.get()
         }
     }
     
     struct ClientDummy: Client {
-        func send(userMessages: [String]) async throws -> String {
+        func send(userMessage: String) async throws -> String {
             ""
         }
     }

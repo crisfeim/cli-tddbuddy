@@ -17,7 +17,7 @@ public class Generator {
     }
     
     public func generateCode(from specs: String) async throws -> Output {
-        let generated = try await client.send(userMessages: [])
+        let generated = try await client.send(userMessage: specs)
         let concatenated = concatenator(specs, generated)
         let processOutput = try runner.run(concatenated)
         return (generated, processOutput)
