@@ -12,6 +12,7 @@ public struct OllamaClient: Client {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = try makeBody(systemPrompt, userMessage)
+        //request.timeoutInterval = 10
         
         let (data, httpResponse) = try await URLSession.shared.data(for: request)
         

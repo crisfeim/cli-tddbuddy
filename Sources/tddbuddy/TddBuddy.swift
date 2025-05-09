@@ -18,7 +18,7 @@ struct TDDBuddy: AsyncParsableCommand {
         let client = LoggerDecorator(OllamaClient())
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
-        let iterator = Iterator()
+        let iterator = LoggerDecorator(Iterator())
         let generator = LoggerDecorator(Generator(systemPrompt: TDDBuddy.systemPrompt, client: client, runner: runner))
         
         let coordinator = Coordinator(
@@ -36,10 +36,11 @@ struct TDDBuddy: AsyncParsableCommand {
             outputFileURL: outputURL,
             maxIterationCount: iterations
         )
-
-        print("✅ Code generated successfully!")
-        print("🧪 Exit code: \(result.procesOutput.exitCode)")
-        print("📍 Saved to: \(outputURL.path)")
+        
+        result.procesOutput.exitCode != 0
+        ? Logger.info("❌ Code generated didn't meet the specs")
+        : ()
+        
     }
 }
 

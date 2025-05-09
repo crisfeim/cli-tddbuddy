@@ -24,7 +24,7 @@ class IntegrationTests: XCTestCase {
         let client = LoggerDecorator(OllamaClient())
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
-        let iterator = Iterator()
+        let iterator = LoggerDecorator(Iterator())
         let generator = LoggerDecorator(Generator(systemPrompt: systemPrompt, client: client, runner: runner))
         let sut = Coordinator(
             reader: reader,

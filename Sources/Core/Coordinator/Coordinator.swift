@@ -3,6 +3,12 @@
 import Foundation
 
 public class Coordinator {
+    
+    public protocol Iterator {
+        var count: Int {get}
+        func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws
+    }
+    
     public protocol Generator {
         typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
         func generateCode(from specs: String) async throws -> Output

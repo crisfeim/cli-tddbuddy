@@ -1,10 +1,14 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 9/5/25.
 import Foundation
 import Core
+import os
+
+let logger = os.Logger(subsystem: "me.crisfe.tddbuddy.cli", category: "core")
 
 enum Logger {
-    static func log(_ message: String) {
+    static func info(_ message: String) {
         print(message)
+        logger.info("\(message, privacy: .public)")
     }
 }
 
@@ -19,40 +23,29 @@ public final class LoggerDecorator<T> {
 // MARK: - Client
 extension LoggerDecorator: Client where T: Client {
     public func send(systemPrompt: String, userMessage: String) async throws -> String {
-        Logger.log("🟡 [Client] Sending specs")
-        let response = try await decoratee.send(systemPrompt: systemPrompt, userMessage: userMessage)
-        Logger.log("🟢 [Client] Received Response")
-        return response
+        try await decoratee.send(systemPrompt: systemPrompt, userMessage: userMessage)
     }
 }
 
 // MARK: - Runner
 extension LoggerDecorator: Runner where T: Runner {
     public func run(_ code: String) throws -> ProcessOutput {
-        Logger.log("🟡 [Runner] Running code")
-        let result = try decoratee.run(code)
-        Logger.log("🟢 [Runner] Code run")
-
-        return result
+        try decoratee.run(code)
     }
 }
 
 // MARK: - Persistor
 extension LoggerDecorator: Persistor where T: Persistor {
     public func persist(_ string: String, outputURL: URL) throws {
-        Logger.log("🟡 [Persistor] Saving to \(outputURL.path):")
         try decoratee.persist(string, outputURL: outputURL)
-        Logger.log("🟢 [Persistor] Save successful")
+        Logger.info("📍 Output saved to \(outputURL.path):")
     }
 }
 
 // MARK: - FileReader
 extension LoggerDecorator: FileReader where T: FileReader {
     public func read(_ url: URL) throws -> String {
-        Logger.log("🟡 [FileReader] Reading from: \(url.path)")
         let contents = try decoratee.read(url)
-        Logger.log("🟢 [FileReader] Contents read")
-
         return contents
     }
 }
@@ -60,11 +53,24 @@ extension LoggerDecorator: FileReader where T: FileReader {
 // MARK: - Generator
 extension LoggerDecorator: Coordinator.Generator where T: Coordinator.Generator {
     public func generateCode(from specs: String) async throws -> Output {
-        Logger.log("🟡 [Generator] Generating code from specs")
         let output = try await decoratee.generateCode(from: specs)
-        Logger.log("🟢 [Generator] Code Generated with exit code: \(output.procesOutput.exitCode)")
-        Logger.log("🔚 Exit Code: \(output.procesOutput.exitCode)")
-
+        
+        output.procesOutput.exitCode == 0
+        ? Logger.info("✅ Code generated successfully")
+        : ()
+        
         return output
+    }
+}
+
+// MARK: - Iterator
+extension LoggerDecorator: Coordinator.Iterator where T: Coordinator.Iterator {
+    public var count: Int {decoratee.count}
+    public func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
+        let action: () async throws -> Void = { [decoratee] in
+            Logger.info("🔄 Iterating \(decoratee.count) / \(n) times...")
+            try await action()
+        }
+        try await decoratee.iterate(nTimes: n, until: condition, action: action)
     }
 }
