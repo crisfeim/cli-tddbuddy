@@ -2,14 +2,6 @@
 
 import Foundation
 
-public protocol FileReader {
-    func read(_ url: URL) throws -> String
-}
-
-public protocol Persistor {
-    func persist(_ string: String, outputURL: URL) throws
-}
-
 public class Coordinator {
     public protocol Generator {
         typealias Output = (generatedCode: String, output: Runner.Output)

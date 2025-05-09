@@ -1,19 +1,5 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 8/5/25.
 
-public protocol Client {
-    func send(userMessages: [String]) async throws -> String
-}
-
-public protocol Runner {
-    typealias Output = (stdout: String, stderr: String, exitCode: Int)
-    func run(_ code: String) throws -> Output
-}
-
-
-infix operator ++
-public func ++(lhs: String, rhs: String) -> String {
-    lhs + "\n" + rhs
-}
 
 public class Generator {
     
@@ -36,4 +22,9 @@ public class Generator {
         let stdOut = try runner.run(concatenated)
         return (generated, stdOut)
     }
+}
+
+infix operator ++
+public func ++(lhs: String, rhs: String) -> String {
+    lhs + "\n" + rhs
 }
