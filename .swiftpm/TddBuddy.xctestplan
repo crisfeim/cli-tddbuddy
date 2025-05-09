@@ -18,14 +18,6 @@
   },
   "testTargets" : [
     {
-      "enabled" : false,
-      "target" : {
-        "containerPath" : "container:",
-        "identifier" : "CoreE2ETests",
-        "name" : "CoreE2ETests"
-      }
-    },
-    {
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:",

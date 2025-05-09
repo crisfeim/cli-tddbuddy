@@ -19,6 +19,6 @@ let package = Package(
             ]
         ),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
-        .testTarget(name: "CoreE2ETests", dependencies: ["Core"])
+        .testTarget(name: "CoreE2ETests", dependencies: ["Core"], resources: [.copy("inputs")])
     ]
 )

@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "92456676-19E6-46B6-9AF9-FEF11E6ED40D",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "CoreE2ETests",
+        "name" : "CoreE2ETests"
+      }
+    }
+  ],
+  "version" : 1
+}
