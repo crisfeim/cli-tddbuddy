@@ -10,12 +10,14 @@ let package = Package(
     ],
     targets: [
         .target(name: "Core"),
+        
         .executableTarget(
             name: "tddbuddy",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
-        .testTarget(name: "CoreTests", dependencies: ["Core"])
+        .testTarget(name: "CoreTests", dependencies: ["Core"]),
+        .testTarget(name: "CoreE2ETests", dependencies: ["Core"])
     ]
 )
