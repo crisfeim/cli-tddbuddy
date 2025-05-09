@@ -3,7 +3,7 @@
 
 import Foundation
 
-public struct OllamaClient {
+public struct OllamaClient: Client {
     private let model = "llama3.2"
     private let url = "http://localhost:11434/api/chat"
     public init() {}

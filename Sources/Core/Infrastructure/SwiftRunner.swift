@@ -3,7 +3,7 @@
 
 import XCTest
 
-public struct SwiftRunner {
+public struct SwiftRunner: Runner {
     private let fm = FileManager.default
     public init() {}
     public typealias ProcessOutput = (stdout: String, stderr: String, exitCode: Int)

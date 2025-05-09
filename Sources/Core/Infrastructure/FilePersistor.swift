@@ -3,7 +3,7 @@
 
 import XCTest
 
-public class FilePersistor {
+public class FilePersistor: Persistor {
     public init() {}
     public func persist(_ string: String, outputURL: URL) throws {
         try string.write(to: outputURL, atomically: true, encoding: .utf8)

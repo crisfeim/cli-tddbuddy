@@ -1,10 +1,9 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 8/5/25.
 
 
-public class Generator {
+public class Generator: Coordinator.Generator {
     
     public typealias Concatenator = (String, String) -> String
-    public typealias Output = (generatedCode: String, output: Runner.ProcessOutput)
     
     let client: Client
     let runner: Runner

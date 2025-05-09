@@ -2,7 +2,7 @@
 
 import Foundation
 
-extension FileManager {
+extension FileManager: FileReader {
     public func read(_ url: URL) throws -> String {
         try String(contentsOf: url, encoding: .utf8)
     }
