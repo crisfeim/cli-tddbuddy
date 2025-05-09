@@ -1,12 +1,7 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 9/5/25.
 
 import XCTest
-
-extension FileManager {
-    func read(_ url: URL) throws -> String {
-        try String(contentsOf: url, encoding: .utf8)
-    }
-}
+import Core
 
 class FileReaderTests: XCTestCase {
     override func setUp() {
