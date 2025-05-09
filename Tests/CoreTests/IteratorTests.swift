@@ -4,25 +4,25 @@
 import XCTest
 import Core
 
-class IteratorTests: XCTestCase {
+class Iterator {
+    let maxCount: Int
+    let action: () async throws -> Void
     
-    class Iterator {
-        let maxCount: Int
-        let action: () async throws -> Void
-        
-        init(maxCount: Int, action: @escaping () async throws -> Void) {
-            self.maxCount = maxCount
-            self.action = action
-        }
-        
-        func start() async throws {
-            var currentCount = 0
-            while currentCount < maxCount {
-                currentCount += 1
-                try await action()
-            }
+    init(maxCount: Int, action: @escaping () async throws -> Void) {
+        self.maxCount = maxCount
+        self.action = action
+    }
+    
+    func start() async throws {
+        var currentCount = 0
+        while currentCount < maxCount {
+            currentCount += 1
+            try await action()
         }
     }
+}
+
+class IteratorTests: XCTestCase {
     
     func test_iterator() async throws {
         var currentIteration = 0
