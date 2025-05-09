@@ -7,8 +7,8 @@ import Core
 class Iterator {
     private var currentCount = 0
     var count: Int { currentCount }
-    func start(maxCount: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
-        while currentCount < maxCount && !condition() {
+    func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
+        while currentCount < n && !condition() {
             currentCount += 1
             try await action()
         }
@@ -19,13 +19,13 @@ class IteratorTests: XCTestCase {
     
     func test_iterator_iteratesNtimes() async throws {
         let sut = Iterator()
-        try await sut.start(maxCount: 5, until: neverFullfillsCondition, action: {})
+        try await sut.iterate(nTimes: 5, until: neverFullfillsCondition, action: {})
         XCTAssertEqual(sut.count, 5)
     }
     
     func test_iterator_stopsWhenConditionIsMet() async throws {
         let sut = Iterator()
-        try await sut.start(maxCount: 5, until: { sut.count == 1 }, action: {})
+        try await sut.iterate(nTimes: 5, until: { sut.count == 1 }, action: {})
         XCTAssertEqual(sut.count, 1)
     }
     

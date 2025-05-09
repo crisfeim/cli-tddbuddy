@@ -43,7 +43,7 @@ class CoordinatorTests: XCTestCase {
         func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws {
             let specs = try reader.read(specsFileURL)
             var output: Generator.Output?
-            try await iterator.start(maxCount: maxIterationCount, until: {output?.output.exitCode == 0}) {
+            try await iterator.iterate(nTimes: maxIterationCount, until: {output?.output.exitCode == 0}) {
                 output = try await generator.generateCode(from: specs)
             }
            
@@ -154,7 +154,6 @@ class CoordinatorTests: XCTestCase {
         XCTAssertEqual(persistorSpy.persistedString, anyGeneratedOutput().generatedCode)
     }
     
-    #warning("Rename iterator.start -> iterator.iterate")
     func test_generateAndSaveCode_retriesUntilMaxIterationWhenProcessFails() async throws {
         let iterator = Iterator()
         let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
