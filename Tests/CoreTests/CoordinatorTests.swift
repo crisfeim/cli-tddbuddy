@@ -88,13 +88,6 @@ class CoordinatorTests: XCTestCase {
     }
     
     func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
-        struct PersistorStub: Persistor {
-            let result: Result<Void, Error>
-            func persist(_ string: String, outputURL: URL) throws {
-                try result.get()
-            }
-        }
-        
         let persistor = PersistorStub(result: .failure(anyError()))
         let coordinator = makeSUT(persistor: persistor)
         do {
@@ -105,12 +98,29 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
+    func test_generateAndSaveCode_deliversNoErrorOnPersistenceSuccess() async throws {
+        let persistor = PersistorStub(result: .success(()))
+        let coordinator = makeSUT(persistor: persistor)
+        do {
+            try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+        } catch {
+            XCTFail()
+        }
+    }
+    
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),
         generator: Generator = GeneratorDummy(),
         persistor: Persistor = PersistorDummy()
     ) -> Coordinator {
         Coordinator(reader: reader, generator: generator, persistor: persistor)
+    }
+    
+    struct PersistorStub: Persistor {
+        let result: Result<Void, Error>
+        func persist(_ string: String, outputURL: URL) throws {
+            try result.get()
+        }
     }
     
     struct GeneratorStub: Generator {
