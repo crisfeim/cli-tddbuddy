@@ -1,12 +1,9 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 9/5/25.
 
 import XCTest
+import Core
+
 class FilePersistorTests: XCTestCase {
-    class FilePersistor {
-        func persist(_ string: String, outputURL: URL) throws {
-            try string.write(to: outputURL, atomically: true, encoding: .utf8)
-        }
-    }
     
     override func setUp() async throws {
         setupEmptyState()
