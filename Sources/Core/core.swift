@@ -15,7 +15,7 @@ public func ++(lhs: String, rhs: String) -> String {
     lhs + "\n" + rhs
 }
 
-public final class Generator {
+public class Generator {
     
     public typealias Concatenator = (String, String) -> String
     public typealias Output = (generatedCode: String, output: Runner.Output)

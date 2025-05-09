@@ -12,12 +12,14 @@ class CoordinatorTests: XCTestCase {
         func persist(_ string: String, outputURL: URL) throws
     }
     
-    protocol Generator {
-        typealias Output = (generatedCode: String, output: Runner.Output)
-        func generateCode(from specs: String) async throws -> Output
-    }
+    typealias Generator = Coordinator.Generator
     
     class Coordinator {
+        protocol Generator {
+            typealias Output = (generatedCode: String, output: Runner.Output)
+            func generateCode(from specs: String) async throws -> Output
+        }
+        
         let reader: FileReader
         let generator: Generator
         let persistor: Persistor
