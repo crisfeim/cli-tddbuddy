@@ -37,8 +37,8 @@ class CoordinatorTests: XCTestCase {
         }
         
         func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL) async throws {
-            let _ = try reader.read(specsFileURL)
-            let _ = try await generator.generateCode(from: "")
+            let specs = try reader.read(specsFileURL)
+            let _ = try await generator.generateCode(from: specs)
             let _ = try persistor.persist("", outputURL: outputFileURL)
         }
     }
@@ -108,6 +108,25 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
+    func test_generateAndSaveCode_generatesCodeFromReadFile() async throws {
+        
+        final class GeneratorSpy: Generator {
+            var specs: String?
+            func generateCode(from specs: String) async throws -> Output {
+                self.specs = specs
+                return ("", ("", "", 0))
+            }
+        }
+        
+        let reader = FileReaderStub(result: .success(anyString()))
+        let generatorSpy = GeneratorSpy()
+        let coordinator = makeSUT(reader: reader, generator: generatorSpy)
+        
+        try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+        
+        XCTAssertEqual(generatorSpy.specs, anyString())
+    }
+    
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),
         generator: Generator = GeneratorDummy(),
@@ -156,6 +175,9 @@ class CoordinatorTests: XCTestCase {
 }
 
 private extension CoordinatorTests {
+    func anyString() -> String {
+        "any string"
+    }
     func anyGeneratedOutput() -> Generator.Output {
         ("", output: ("", "", 0))
     }
