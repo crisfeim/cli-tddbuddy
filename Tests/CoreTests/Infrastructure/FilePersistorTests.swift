@@ -5,11 +5,11 @@ import Core
 
 class FilePersistorTests: XCTestCase {
     
-    override func setUp() async throws {
+    override func setUp() {
         setupEmptyState()
     }
     
-    override func tearDown() async throws {
+    override func tearDown() {
         cleanTestsArtifacts()
     }
     
