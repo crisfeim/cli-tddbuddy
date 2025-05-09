@@ -8,7 +8,7 @@ class OllamaClientTests: XCTestCase {
     
     func test_send_withRunningOllamaServer_returnsContent() async throws {
         let sut = OllamaClient()
-        let response = try await sut.send(userMessage: "hello")
+        let response = try await sut.send(systemPrompt: "", userMessage: "hello")
         XCTAssert(!response.isEmpty)
     }
 }

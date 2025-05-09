@@ -19,8 +19,9 @@ public class Coordinator {
         self.persistor = persistor
         self.iterator = iterator
     }
-    
-    public func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws {
+   
+    @discardableResult
+    public func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Generator.Output {
         let specs = try reader.read(specsFileURL)
         var output: Generator.Output?
         try await iterator.iterate(nTimes: maxIterationCount, until: {output?.output.exitCode == 0}) {
@@ -30,5 +31,6 @@ public class Coordinator {
         try output.flatMap { unwrapped in
             try persistor.persist(unwrapped.generatedCode, outputURL: outputFileURL)
         }
+        return output!
     }
 }

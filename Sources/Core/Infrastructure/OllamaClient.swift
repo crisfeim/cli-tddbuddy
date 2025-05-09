@@ -7,11 +7,11 @@ public struct OllamaClient: Client {
     private let model = "llama3.2"
     private let url = "http://localhost:11434/api/chat"
     public init() {}
-    public func send(userMessage: String) async throws -> String {
+    public func send(systemPrompt: String, userMessage: String) async throws -> String {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.httpBody = try makeBody(userMessage)
+        request.httpBody = try makeBody(systemPrompt, userMessage)
         
         let (data, httpResponse) = try await URLSession.shared.data(for: request)
         
@@ -22,10 +22,11 @@ public struct OllamaClient: Client {
         return try JSONDecoder().decode(Response.self, from: data).message.content
     }
     
-    private func makeBody(_ userMessage: String) throws -> Data {
+    private func makeBody(_ systemPrompt: String, _ userMessage: String) throws -> Data {
         try JSONSerialization.data(withJSONObject: [
             "model": model,
             "messages": [
+                ["role": "system", "content": systemPrompt],
                 ["role": "user", "content": userMessage]
             ],
             "stream": false

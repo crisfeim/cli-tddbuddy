@@ -5,12 +5,26 @@ import Core
 
 class IntegrationTests: XCTestCase {
     func test_adder_generation() async throws {
+        let systemPrompt = """
+            Imagine that you are a programmer and the user's responses are feedback from compiling your code in your development environment. Your responses are the code you write, and the user's responses represent the feedback, including any errors.
+            
+            Implement the SUT's code in Swift based on the provided specs (unit tests).
+            
+            Follow these strict guidelines:
+            
+            1. Provide ONLY runnable Swift code. No explanations, comments, or formatting (no code blocks, markdown, symbols, or text).
+            2. DO NOT include unit tests or any test-related code.
+            3. ALWAYS IMPORT ONLY Foundation. No other imports are allowed.
+            4. DO NOT use access control keywords (`public`, `private`, `internal`) or control flow keywords in your constructs.
+            
+            If your code fails to compile, the user will provide the error output for you to make adjustments.
+            """
         let reader = FileManager.default
-        let client = OllamaClient()
-        let runner = SwiftRunner()
-        let persistor = FilePersistor()
+        let client = LoggerDecorator(OllamaClient())
+        let runner = LoggerDecorator(SwiftRunner())
+        let persistor = LoggerDecorator(FilePersistor())
         let iterator = Iterator()
-        let generator = Generator(client: client, runner: runner)
+        let generator = LoggerDecorator(Generator(systemPrompt: systemPrompt, client: client, runner: runner))
         let sut = Coordinator(
             reader: reader,
             generator: generator,
@@ -19,11 +33,10 @@ class IntegrationTests: XCTestCase {
         )
         let adderSpecs = specsURL("adder.swift.txt")
         let tmpURL = FileManager.default.temporaryDirectory.appendingPathComponent("adder.swift.txt")
-        try await sut.generateAndSaveCode(specsFileURL: adderSpecs, outputFileURL: tmpURL)
+        let output = try await sut.generateAndSaveCode(specsFileURL: adderSpecs, outputFileURL: tmpURL, maxIterationCount: 5)
         
-        let contents = try reader.read(tmpURL)
-        
-        XCTAssertEqual(contents.isEmpty, false)
+        XCTAssertFalse(output.generatedCode.isEmpty)
+        XCTAssertEqual(output.output.exitCode, 0)
     }
     
     func specsURL(_ filename: String) -> URL {

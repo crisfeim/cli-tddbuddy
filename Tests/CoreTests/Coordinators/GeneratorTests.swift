@@ -69,7 +69,7 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_sendsSpecsToClient() async throws {
         class ClientSpy: Client {
             var sentMessage: String?
-            func send(userMessage: String) async throws -> String {
+            func send(systemPrompt: String, userMessage: String) async throws -> String {
                 sentMessage = userMessage
                 return ""
             }
@@ -87,6 +87,7 @@ class GeneratorTests: XCTestCase {
         concatenator: @escaping Generator.Concatenator = anyConcatenator()
     ) -> Generator {
         Generator(
+            systemPrompt: "any system promt",
             client: client,
             runner: runner,
             concatenator: concatenator
@@ -105,13 +106,13 @@ private extension GeneratorTests {
     
     struct ClientStub: Client {
         let stub: Result<String, Error>
-        func send(userMessage: String) async throws -> String {
+        func send(systemPrompt: String, userMessage: String) async throws -> String {
             try stub.get()
         }
     }
     
     struct ClientDummy: Client {
-        func send(userMessage: String) async throws -> String {
+        func send(systemPrompt: String, userMessage: String) async throws -> String {
             ""
         }
     }
