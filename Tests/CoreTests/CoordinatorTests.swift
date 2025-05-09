@@ -32,16 +32,24 @@ class CoordinatorTests: XCTestCase {
         let reader: FileReader
         let generator: Generator
         let persistor: Persistor
-        init(reader: FileReader, generator: Generator, persistor: Persistor) {
+        let iterator: Iterator
+        init(reader: FileReader, generator: Generator, persistor: Persistor, iterator: Iterator) {
             self.reader = reader
             self.generator = generator
             self.persistor = persistor
+            self.iterator = iterator
         }
         
-        func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL) async throws {
+        func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws {
             let specs = try reader.read(specsFileURL)
-            let output = try await generator.generateCode(from: specs)
-            try persistor.persist(output.generatedCode, outputURL: outputFileURL)
+            var output: Generator.Output?
+            try await iterator.start(maxCount: maxIterationCount, until: {output?.output.exitCode == 0}) {
+                output = try await generator.generateCode(from: specs)
+            }
+           
+            try output.flatMap { unwrapped in
+                try persistor.persist(unwrapped.generatedCode, outputURL: outputFileURL)
+            }
         }
     }
     
@@ -144,15 +152,26 @@ class CoordinatorTests: XCTestCase {
         
         try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
         XCTAssertEqual(persistorSpy.persistedString, anyGeneratedOutput().generatedCode)
+    }
+    
+    #warning("Rename coordinator definitions -> sut")
+    #warning("Rename iterator.start -> iterator.iterate")
+    func test_generateAndSaveCode_retriesUntilMaxIterationWhenProcessFails() async throws {
+        let iterator = Iterator()
+        let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
+        let coordinator = makeSUT(generator: generator, iterator: iterator)
+        try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL(), maxIterationCount: 5)
         
+        XCTAssertEqual(iterator.count, 5)
     }
     
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),
         generator: Generator = GeneratorDummy(),
-        persistor: Persistor = PersistorDummy()
+        persistor: Persistor = PersistorDummy(),
+        iterator: Iterator = Iterator()
     ) -> Coordinator {
-        Coordinator(reader: reader, generator: generator, persistor: persistor)
+        Coordinator(reader: reader, generator: generator, persistor: persistor, iterator: iterator)
     }
     
     struct PersistorStub: Persistor {

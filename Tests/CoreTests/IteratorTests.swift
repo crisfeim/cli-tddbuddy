@@ -5,7 +5,8 @@ import XCTest
 import Core
 
 class Iterator {
-    var currentCount = 0
+    private var currentCount = 0
+    var count: Int { currentCount }
     func start(maxCount: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
         while currentCount < maxCount && !condition() {
             currentCount += 1
@@ -19,13 +20,13 @@ class IteratorTests: XCTestCase {
     func test_iterator_iteratesNtimes() async throws {
         let iterator = Iterator()
         try await iterator.start(maxCount: 5, until: neverFullfillsCondition, action: {})
-        XCTAssertEqual(iterator.currentCount, 5)
+        XCTAssertEqual(iterator.count, 5)
     }
     
     func test_iterator_stopsWhenConditionIsMet() async throws {
         let iterator = Iterator()
-        try await iterator.start(maxCount: 5, until: { iterator.currentCount == 1 }, action: {})
-        XCTAssertEqual(iterator.currentCount, 1)
+        try await iterator.start(maxCount: 5, until: { iterator.count == 1 }, action: {})
+        XCTAssertEqual(iterator.count, 1)
     }
     
     private func neverFullfillsCondition() -> Bool { false }
