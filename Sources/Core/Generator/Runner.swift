@@ -2,6 +2,6 @@
 
 
 public protocol Runner {
-    typealias Output = (stdout: String, stderr: String, exitCode: Int)
-    func run(_ code: String) throws -> Output
+    typealias ProcessOutput = (stdout: String, stderr: String, exitCode: Int)
+    func run(_ code: String) throws -> ProcessOutput
 }

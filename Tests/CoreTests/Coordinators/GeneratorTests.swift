@@ -52,7 +52,7 @@ class GeneratorTests: XCTestCase {
     func test_generatedCode_usesConcatenatedCodeAsRunnerInput() async throws {
         class RunnerSpy: Runner {
             var code: String?
-            func run(_ code: String) throws -> Runner.Output {
+            func run(_ code: String) throws -> Runner.ProcessOutput {
                 self.code = code
                 return ("", "", 0)
             }
@@ -83,7 +83,7 @@ class GeneratorTests: XCTestCase {
 private extension GeneratorTests {
     
     struct RunnerDummy: Runner {
-        func run(_ code: String) throws -> Output {
+        func run(_ code: String) throws -> ProcessOutput {
             ("","",0)
         }
     }
@@ -101,8 +101,8 @@ private extension GeneratorTests {
         }
     }
     struct RunnerStub: Runner {
-        let stub: Result<Output, Error>
-        func run(_ code: String) throws -> Output {
+        let stub: Result<ProcessOutput, Error>
+        func run(_ code: String) throws -> ProcessOutput {
             try stub.get()
         }
     }
@@ -111,7 +111,7 @@ private extension GeneratorTests {
 
 // MARK: - Factories
 private extension GeneratorTests {
-    func anyProcessOutput() -> Runner.Output {
+    func anyProcessOutput() -> Runner.ProcessOutput {
         ("", "", 0)
     }
     
