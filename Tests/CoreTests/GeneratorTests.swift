@@ -7,17 +7,17 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversCodeOnClientSuccess() async throws {
         
         let client = ClientStub(stub: .success(anyGeneratedCode()))
-        let generator = makeSUT(client: client)
-        let (generated, _) = try await generator.generateCode(from: anySpecs())
+        let sut = makeSUT(client: client)
+        let (generated, _) = try await sut.generateCode(from: anySpecs())
         XCTAssertEqual(generated, anyGeneratedCode())
     }
     
     func test_generateCode_deliversErrorOnClientError() async throws {
         
         let client = ClientStub(stub: .failure(anyError()))
-        let generator = makeSUT(client: client)
+        let sut = makeSUT(client: client)
         do {
-            let _ = try await generator.generateCode(from: anySpecs())
+            let _ = try await sut.generateCode(from: anySpecs())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
@@ -27,9 +27,9 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversErrorOnRunnerError() async throws {
         
         let runner = RunnerStub(stub: .failure(anyError()))
-        let generator = makeSUT(runner: runner)
+        let sut = makeSUT(runner: runner)
         do {
-            let _ = try await generator.generateCode(from: anySpecs())
+            let _ = try await sut.generateCode(from: anySpecs())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
@@ -39,8 +39,8 @@ class GeneratorTests: XCTestCase {
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
         
         let runner = RunnerStub(stub: .success(anyProcessOutput()))
-        let generator = makeSUT(runner: runner)
-        let (_, output) = try await generator.generateCode(from: anySpecs())
+        let sut = makeSUT(runner: runner)
+        let (_, output) = try await sut.generateCode(from: anySpecs())
         
         anyProcessOutput() .* { expected in
             XCTAssertEqual(output.stderr, expected.stderr)
@@ -60,8 +60,8 @@ class GeneratorTests: XCTestCase {
         
         let clientStub = ClientStub(stub: .success(anyGeneratedCode()))
         let runner = RunnerSpy()
-        let generator = makeSUT(client: clientStub, runner: runner, concatenator: ++)
-        _ = try await generator.generateCode(from: anySpecs())
+        let sut = makeSUT(client: clientStub, runner: runner, concatenator: ++)
+        _ = try await sut.generateCode(from: anySpecs())
         XCTAssertEqual(runner.code?.contains(anySpecs()), true)
         XCTAssertEqual(runner.code?.contains(anyGeneratedCode()), true)
     }
