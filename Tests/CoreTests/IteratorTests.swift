@@ -4,16 +4,7 @@
 import XCTest
 import Core
 
-class Iterator {
-    private var currentCount = 0
-    var count: Int { currentCount }
-    func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
-        while currentCount < n && !condition() {
-            currentCount += 1
-            try await action()
-        }
-    }
-}
+
 
 class IteratorTests: XCTestCase {
     

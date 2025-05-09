@@ -4,45 +4,7 @@ import XCTest
 import Core
 
 class CoordinatorTests: XCTestCase {
-    protocol FileReader {
-        func read(_ url: URL) throws -> String
-    }
-    
-    protocol Persistor {
-        func persist(_ string: String, outputURL: URL) throws
-    }
-    
     typealias Generator = Coordinator.Generator
-    
-    class Coordinator {
-        protocol Generator {
-            typealias Output = (generatedCode: String, output: Runner.Output)
-            func generateCode(from specs: String) async throws -> Output
-        }
-        
-        let reader: FileReader
-        let generator: Generator
-        let persistor: Persistor
-        let iterator: Iterator
-        init(reader: FileReader, generator: Generator, persistor: Persistor, iterator: Iterator) {
-            self.reader = reader
-            self.generator = generator
-            self.persistor = persistor
-            self.iterator = iterator
-        }
-        
-        func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws {
-            let specs = try reader.read(specsFileURL)
-            var output: Generator.Output?
-            try await iterator.iterate(nTimes: maxIterationCount, until: {output?.output.exitCode == 0}) {
-                output = try await generator.generateCode(from: specs)
-            }
-           
-            try output.flatMap { unwrapped in
-                try persistor.persist(unwrapped.generatedCode, outputURL: outputFileURL)
-            }
-        }
-    }
     
     func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
         let reader = FileReaderStub(result: .failure(anyError()))
@@ -67,7 +29,6 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversErrorOnGeneratorError() async throws {
       
-        
         let generator = GeneratorStub(result: .failure(anyError()))
         let coordinatior = makeSUT(generator: generator)
         do {
