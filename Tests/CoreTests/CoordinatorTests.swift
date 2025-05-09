@@ -3,18 +3,7 @@
 import XCTest
 import Core
 
-
-
 class CoordinatorTests: XCTestCase {
-    
-    func anyURL() -> URL {
-        URL(string: "http://any-url.com")!
-    }
-    
-    func anyError() -> NSError {
-        NSError(domain: "", code: 0)
-    }
-    
     protocol FileReader {
         func read(_ url: URL) throws -> String
     }
@@ -211,7 +200,17 @@ class CoordinatorTests: XCTestCase {
     }
 }
 
+// MARK: - Helpers
 private extension CoordinatorTests {
+    
+    func anyURL() -> URL {
+        URL(string: "http://any-url.com")!
+    }
+    
+    func anyError() -> NSError {
+        NSError(domain: "", code: 0)
+    }
+    
     func anyString() -> String {
         "any string"
     }
