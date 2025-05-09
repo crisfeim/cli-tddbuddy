@@ -45,7 +45,7 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
         let reader = FileReaderStub(result: .failure(anyError()))
-        let coordinator = Coordinator(reader: reader, generator: GeneratorDummy(), persistor: PersistorDummy())
+        let coordinator = makeSUT(reader: reader)
         do {
             try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
             XCTFail()
@@ -56,7 +56,7 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversNoErrorOnReaderSuccess() async throws {
         let reader = FileReaderStub(result: .success(""))
-        let coordinator = Coordinator(reader: reader, generator: GeneratorDummy(), persistor: PersistorDummy())
+        let coordinator = makeSUT(reader: reader)
         do {
             try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
         } catch {
@@ -68,7 +68,7 @@ class CoordinatorTests: XCTestCase {
       
         
         let generator = GeneratorStub(result: .failure(anyError()))
-        let coordinatior = Coordinator(reader: FileReaderDummy(), generator: generator, persistor: PersistorDummy())
+        let coordinatior = makeSUT(generator: generator)
         do {
             try await coordinatior.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
             XCTFail()
@@ -79,7 +79,7 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversNoErrorOnGeneratorSuccess() async throws {
         let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
-        let coordinatior = Coordinator(reader: FileReaderDummy(), generator: generator, persistor: PersistorDummy())
+        let coordinatior = makeSUT(generator: generator)
         do {
             try await coordinatior.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
         } catch {
@@ -96,17 +96,21 @@ class CoordinatorTests: XCTestCase {
         }
         
         let persistor = PersistorStub(result: .failure(anyError()))
-        let coordinator = Coordinator(
-            reader: FileReaderDummy(),
-            generator: GeneratorDummy(),
-            persistor: persistor
-        )
+        let coordinator = makeSUT(persistor: persistor)
         do {
             try await coordinator.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
         }
+    }
+    
+    private func makeSUT(
+        reader: FileReader = FileReaderDummy(),
+        generator: Generator = GeneratorDummy(),
+        persistor: Persistor = PersistorDummy()
+    ) -> Coordinator {
+        Coordinator(reader: reader, generator: generator, persistor: persistor)
     }
     
     struct GeneratorStub: Generator {
