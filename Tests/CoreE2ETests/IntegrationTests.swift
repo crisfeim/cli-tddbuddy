@@ -36,7 +36,7 @@ class IntegrationTests: XCTestCase {
         let output = try await sut.generateAndSaveCode(specsFileURL: adderSpecs, outputFileURL: tmpURL, maxIterationCount: 5)
         
         XCTAssertFalse(output.generatedCode.isEmpty)
-        XCTAssertEqual(output.output.exitCode, 0)
+        XCTAssertEqual(output.procesOutput.exitCode, 0)
     }
     
     func specsURL(_ filename: String) -> URL {

@@ -79,9 +79,9 @@ extension LoggerDecorator: Coordinator.Generator where T: Coordinator.Generator 
 
         print("🟢 [Generator] Generated Code:")
         print(output.generatedCode)
-        print("🟢 [Generator] Stdout:\n\(output.output.stdout)")
-        print("🟠 [Generator] Stderr:\n\(output.output.stderr)")
-        print("🔚 Exit Code: \(output.output.exitCode)")
+        print("🟢 [Generator] Stdout:\n\(output.procesOutput.stdout)")
+        print("🟠 [Generator] Stderr:\n\(output.procesOutput.stderr)")
+        print("🔚 Exit Code: \(output.procesOutput.exitCode)")
 
         return output
     }

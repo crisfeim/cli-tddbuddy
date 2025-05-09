@@ -4,7 +4,7 @@ import Foundation
 
 public class Coordinator {
     public protocol Generator {
-        typealias Output = (generatedCode: String, output: Runner.ProcessOutput)
+        typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
         func generateCode(from specs: String) async throws -> Output
     }
     
@@ -24,7 +24,7 @@ public class Coordinator {
     public func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Generator.Output {
         let specs = try reader.read(specsFileURL)
         var output: Generator.Output?
-        try await iterator.iterate(nTimes: maxIterationCount, until: {output?.output.exitCode == 0}) {
+        try await iterator.iterate(nTimes: maxIterationCount, until: {output?.procesOutput.exitCode == 0}) {
             output = try await generator.generateCode(from: specs)
         }
         

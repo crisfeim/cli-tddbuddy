@@ -153,7 +153,7 @@ class CoordinatorTests: XCTestCase {
     
     struct GeneratorDummy: Generator {
         func generateCode(from specs: String) async throws -> Output {
-            ("", output: ("", "", 0))
+            ("", procesOutput: ("", "", 0))
         }
     }
     
@@ -178,6 +178,6 @@ private extension CoordinatorTests {
         "any string"
     }
     func anyGeneratedOutput() -> Generator.Output {
-        ("any generated code", output: ("any stdout", "any stdrr", 1))
+        ("any generated code", procesOutput: ("any stdout", "any stdrr", 1))
     }
 }
