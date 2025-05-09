@@ -18,15 +18,15 @@ class Iterator {
 class IteratorTests: XCTestCase {
     
     func test_iterator_iteratesNtimes() async throws {
-        let iterator = Iterator()
-        try await iterator.start(maxCount: 5, until: neverFullfillsCondition, action: {})
-        XCTAssertEqual(iterator.count, 5)
+        let sut = Iterator()
+        try await sut.start(maxCount: 5, until: neverFullfillsCondition, action: {})
+        XCTAssertEqual(sut.count, 5)
     }
     
     func test_iterator_stopsWhenConditionIsMet() async throws {
-        let iterator = Iterator()
-        try await iterator.start(maxCount: 5, until: { iterator.count == 1 }, action: {})
-        XCTAssertEqual(iterator.count, 1)
+        let sut = Iterator()
+        try await sut.start(maxCount: 5, until: { sut.count == 1 }, action: {})
+        XCTAssertEqual(sut.count, 1)
     }
     
     private func neverFullfillsCondition() -> Bool { false }
