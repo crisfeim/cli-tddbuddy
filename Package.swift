@@ -15,6 +15,7 @@ let package = Package(
         .executableTarget(
             name: "tddbuddy",
             dependencies: [
+                "Core",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
