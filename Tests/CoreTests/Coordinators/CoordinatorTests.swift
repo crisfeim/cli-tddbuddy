@@ -108,13 +108,15 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_retriesUntilMaxIterationWhenProcessFails() async throws {
         let iterator = Iterator()
-        let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
+        let failedProcessOutput = anyFailedProcessOutput()
+        let generatorResponse = (generatedCode: anyGeneratedCode(), procesOutput: failedProcessOutput)
+        let generator = GeneratorStub(result: .success(generatorResponse))
         let sut = makeSUT(generator: generator, iterator: iterator)
         try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL(), maxIterationCount: 5)
         
         XCTAssertEqual(iterator.count, 5)
     }
-    
+
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),
         generator: Generator = GeneratorDummy(),
@@ -174,10 +176,19 @@ private extension CoordinatorTests {
         NSError(domain: "", code: 0)
     }
     
+    func anyGeneratedCode() -> String {
+        "any generated code"
+    }
+    
     func anyString() -> String {
         "any string"
     }
     func anyGeneratedOutput() -> Generator.Output {
         ("any generated code", procesOutput: ("any stdout", "any stdrr", 1))
+    }
+    
+    private static var failedExitCode: Int { 1 }
+    private func anyFailedProcessOutput() -> Runner.ProcessOutput {
+        (stdout: "", stderr: "", exitCode: Self.failedExitCode)
     }
 }
