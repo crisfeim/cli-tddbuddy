@@ -25,7 +25,7 @@ class IntegrationTests: XCTestCase {
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
         let iterator = LoggerDecorator(Iterator())
-        let generator = LoggerDecorator(Generator(systemPrompt: systemPrompt, client: client, runner: runner))
+        let generator = LoggerDecorator(Generator(systemPrompt: systemPrompt, client: client, runner: runner, concatenator: (++)))
         let sut = Coordinator(
             reader: reader,
             generator: generator,

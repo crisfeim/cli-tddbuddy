@@ -10,7 +10,7 @@ public class Generator: Coordinator.Generator {
     let runner: Runner
     let concatenator: Concatenator
     
-    public init(systemPrompt: String, client: Client, runner: Runner, concatenator: @escaping Concatenator = (++)) {
+    public init(systemPrompt: String, client: Client, runner: Runner, concatenator: @escaping Concatenator) {
         self.systemPrompt = systemPrompt
         self.client = client
         self.runner = runner

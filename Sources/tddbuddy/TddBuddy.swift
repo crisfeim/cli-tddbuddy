@@ -19,7 +19,14 @@ struct TDDBuddy: AsyncParsableCommand {
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
         let iterator = LoggerDecorator(Iterator())
-        let generator = LoggerDecorator(Generator(systemPrompt: TDDBuddy.systemPrompt, client: client, runner: runner))
+        let generator = LoggerDecorator(
+            Generator(
+                systemPrompt: TDDBuddy.systemPrompt,
+                client: client,
+                runner: runner,
+                concatenator: (++)
+            )
+        )
         
         let coordinator = Coordinator(
             reader: FileManager.default,
