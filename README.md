@@ -2,6 +2,8 @@
 
 This is an experiment in AI-assisted test-driven development.
 
+![](tddbuddy.png)
+
 ### User Stories
 
 - As a developer, I want to write unit tests without writing any SUT code, so the AI can generate the implementation for me. *(The SUT is defined implicitly by the assertion; the AI infers the intended behavior.)*
