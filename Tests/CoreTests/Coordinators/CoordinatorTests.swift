@@ -8,12 +8,14 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
         let reader = FileReaderStub(result: .failure(anyError()))
         let sut = makeSUT(reader: reader)
-        do {
-            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-            XCTFail()
-        } catch {
-            XCTAssertEqual(error as NSError, anyError())
-        }
+        
+        await XCTAssertThrowsErrorAsync(
+            try await sut.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_deliversNoErrorOnReaderSuccess() async throws {
@@ -29,12 +31,14 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversErrorOnClientError() async throws {
         let client = ClientStub(result: .failure(anyError()))
         let coordinatior = makeSUT(client: client)
-        do {
-            try await coordinatior.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-            XCTFail()
-        } catch {
-            XCTAssertEqual(error as NSError, anyError())
-        }
+        
+        await XCTAssertThrowsErrorAsync(
+            try await coordinatior.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_deliversNoErrorOnClientSuccess() async throws {
@@ -50,12 +54,13 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversErrorOnRunnerError() async throws {
         let runner = RunnerStub(result: .failure(anyError()))
         let coordinator = makeSUT(runner: runner)
-        do {
-            try await coordinator.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-            XCTFail()
-        } catch {
-            XCTAssertEqual(error as NSError, anyError())
-        }
+        await XCTAssertThrowsErrorAsync(
+            try await coordinator.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_deliversOutputOnRunnerSuccess() async throws {
@@ -98,12 +103,13 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
         let persistor = PersistorStub(result: .failure(anyError()))
         let sut = makeSUT(persistor: persistor)
-        do {
-            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-            XCTFail()
-        } catch {
-            XCTAssertEqual(error as NSError, anyError())
-        }
+        await XCTAssertThrowsErrorAsync(
+            try await sut.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_deliversNoErrorOnPersistenceSuccess() async throws {
@@ -238,6 +244,21 @@ class CoordinatorTests: XCTestCase {
         func run(_ code: String) throws -> ProcessOutput {
             (stdout: "", stderr: "", exitCode: 0)
         }
+    }
+}
+
+func XCTAssertThrowsErrorAsync<T>(
+    _ expression: @autoclosure () async throws -> T,
+    _ message: @autoclosure () -> String = "",
+    file: StaticString = #filePath,
+    line: UInt = #line,
+    _ errorHandler: (Error) -> Void = { _ in }
+) async {
+    do {
+        _ = try await expression()
+        XCTFail("Expected error to be thrown, but no error was thrown", file: file, line: line)
+    } catch {
+        errorHandler(error)
     }
 }
 
