@@ -56,7 +56,19 @@ class CoordinatorTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as NSError, anyError())
         }
+    }
+    
+    func test_generateAndSaveCode_deliversOutputOnRunnerSuccess() async throws {
+        let runner = RunnerStub(result: .success(anyProcessOutput()))
+        let coordinator = makeSUT(runner: runner)
+        let result = try await coordinator.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
         
+        let output = result.procesOutput
+        anyProcessOutput() .* { expected in
+            XCTAssertEqual(output.stderr, expected.stderr)
+            XCTAssertEqual(output.stdout, expected.stdout)
+            XCTAssertEqual(output.exitCode, expected.exitCode)
+        }
     }
     
     func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
@@ -227,6 +239,14 @@ private extension CoordinatorTests {
     
     func anySystemPrompt() -> String {
         "any system prompt"
+    }
+    
+    private func anySpecs() -> String {
+        "any specs"
+    }
+    
+    func anyProcessOutput() -> Runner.ProcessOutput {
+        ("", "", 0)
     }
     
     private static var failedExitCode: Int { 1 }
