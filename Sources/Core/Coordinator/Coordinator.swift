@@ -14,24 +14,37 @@ public class Coordinator {
         func generateCode(from specs: String) async throws -> Output
     }
     
+    public typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
+   
     private let reader: FileReader
-    private let generator: Generator
+    private let client: Client
+    private let runner: Runner
+    private let concatenator: Concatenator
     private let persistor: Persistor
     private let iterator: Iterator
     
-    public init(reader: FileReader, generator: Generator, persistor: Persistor, iterator: Iterator) {
+    public init(
+        reader: FileReader,
+        client: Client,
+        runner: Runner,
+        concatenator: @escaping Concatenator,
+        persistor: Persistor,
+        iterator: Iterator
+    ) {
         self.reader = reader
-        self.generator = generator
+        self.client = client
+        self.runner = runner
+        self.concatenator = concatenator
         self.persistor = persistor
         self.iterator = iterator
     }
    
     @discardableResult
-    public func generateAndSaveCode(specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Generator.Output {
+    public func generateAndSaveCode(systemPrompt: String, specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Output {
         let specs = try reader.read(specsFileURL)
         var output: Generator.Output?
         try await iterator.iterate(nTimes: maxIterationCount, until: {output?.procesOutput.exitCode == 0}) {
-            output = try await generator.generateCode(from: specs)
+            output = try await self.generateCode(systemPrompt: systemPrompt, from: specs)
         }
         
         try output.flatMap { unwrapped in
@@ -39,4 +52,16 @@ public class Coordinator {
         }
         return output!
     }
+    
+    public func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
+        let generated = try await client.send(systemPrompt: systemPrompt, userMessage: specs)
+        let concatenated = concatenator(specs, generated)
+        let processOutput = try runner.run(concatenated)
+        return (generated, processOutput)
+    }
+}
+
+infix operator ++
+public func ++(lhs: String, rhs: String) -> String {
+    lhs + "\n" + rhs
 }

@@ -25,16 +25,17 @@ class IntegrationTests: XCTestCase {
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
         let iterator = LoggerDecorator(Iterator())
-        let generator = LoggerDecorator(Generator(systemPrompt: systemPrompt, client: client, runner: runner, concatenator: (++)))
         let sut = Coordinator(
             reader: reader,
-            generator: generator,
+            client: client,
+            runner: runner,
+            concatenator: (++),
             persistor: persistor,
             iterator: iterator
         )
         let adderSpecs = specsURL("adder.swift.txt")
         let tmpURL = FileManager.default.temporaryDirectory.appendingPathComponent("adder.swift.txt")
-        let output = try await sut.generateAndSaveCode(specsFileURL: adderSpecs, outputFileURL: tmpURL, maxIterationCount: 5)
+        let output = try await sut.generateAndSaveCode(systemPrompt: systemPrompt, specsFileURL: adderSpecs, outputFileURL: tmpURL, maxIterationCount: 5)
         
         XCTAssertFalse(output.generatedCode.isEmpty)
         XCTAssertEqual(output.procesOutput.exitCode, 0)
