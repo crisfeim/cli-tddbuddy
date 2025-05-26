@@ -1,9 +1,9 @@
 // © 2025  Cristian Felipe Patiño Rojas. Created on 8/5/25.
 
 
+public typealias Concatenator = (String, String) -> String
 public class Generator: Coordinator.Generator {
     
-    public typealias Concatenator = (String, String) -> String
     
     let systemPrompt: String
     let client: Client
@@ -23,9 +23,4 @@ public class Generator: Coordinator.Generator {
         let processOutput = try runner.run(concatenated)
         return (generated, processOutput)
     }
-}
-
-infix operator ++
-public func ++(lhs: String, rhs: String) -> String {
-    lhs + "\n" + rhs
 }

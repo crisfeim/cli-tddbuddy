@@ -10,7 +10,7 @@ class CoordinatorTests: XCTestCase {
         let reader = FileReaderStub(result: .failure(anyError()))
         let sut = makeSUT(reader: reader)
         do {
-            try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
@@ -21,29 +21,28 @@ class CoordinatorTests: XCTestCase {
         let reader = FileReaderStub(result: .success(""))
         let sut = makeSUT(reader: reader)
         do {
-            try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
         } catch {
             XCTFail()
         }
     }
     
-    func test_generateAndSaveCode_deliversErrorOnGeneratorError() async throws {
-      
-        let generator = GeneratorStub(result: .failure(anyError()))
-        let coordinatior = makeSUT(generator: generator)
+    func test_generateAndSaveCode_deliversErrorOnClientError() async throws {
+        let client = ClientStub(result: .failure(anyError()))
+        let coordinatior = makeSUT(client: client)
         do {
-            try await coordinatior.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+            try await coordinatior.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
         }
     }
     
-    func test_generateAndSaveCode_deliversNoErrorOnGeneratorSuccess() async throws {
-        let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
-        let coordinatior = makeSUT(generator: generator)
+    func test_generateAndSaveCode_deliversNoErrorOnClientSuccess() async throws {
+        let client = ClientStub(result: .success("any genereted code"))
+        let coordinator = makeSUT(client: client)
         do {
-            try await coordinatior.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+            try await coordinator.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
         } catch {
             XCTFail()
         }
@@ -53,7 +52,7 @@ class CoordinatorTests: XCTestCase {
         let persistor = PersistorStub(result: .failure(anyError()))
         let sut = makeSUT(persistor: persistor)
         do {
-            try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
             XCTFail()
         } catch {
             XCTAssertEqual(error as NSError, anyError())
@@ -64,29 +63,32 @@ class CoordinatorTests: XCTestCase {
         let persistor = PersistorStub(result: .success(()))
         let sut = makeSUT(persistor: persistor)
         do {
-            try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
         } catch {
             XCTFail()
         }
     }
     
-    func test_generateAndSaveCode_generatesCodeFromReadFile() async throws {
-        
-        final class GeneratorSpy: Generator {
-            var specs: String?
-            func generateCode(from specs: String) async throws -> Output {
-                self.specs = specs
-                return ("", ("", "", 0))
+    func test_generateAndSaveCode_sendsContentsOfReadFileToClient() async throws {
+        class ClientSpy: Client {
+            var userMessage: String?
+            func send(systemPrompt: String, userMessage: String) async throws -> String {
+                self.userMessage = userMessage
+                return "any generated code"
             }
         }
         
         let reader = FileReaderStub(result: .success(anyString()))
-        let generatorSpy = GeneratorSpy()
-        let sut = makeSUT(reader: reader, generator: generatorSpy)
+        let clientSpy = ClientSpy()
+        let sut = makeSUT(reader: reader, client: clientSpy)
         
-        try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
+        try await sut.generateAndSaveCode(
+            systemPrompt: anySystemPrompt(),
+            specsFileURL: anyURL(),
+            outputFileURL: anyURL()
+        )
         
-        XCTAssertEqual(generatorSpy.specs, anyString())
+        XCTAssertEqual(clientSpy.userMessage, anyString())
     }
     
     func test_generateAndSaveCode_persistsGeneratedCode() async throws {
@@ -97,33 +99,46 @@ class CoordinatorTests: XCTestCase {
             }
         }
         
-        let generator = GeneratorStub(result: .success(anyGeneratedOutput()))
+        let clientStub = ClientStub(result: .success(anyGeneratedCode()))
         let persistorSpy = PersistorSpy()
         
-        let sut = makeSUT(generator: generator, persistor: persistorSpy)
+        let sut = makeSUT(client: clientStub, persistor: persistorSpy)
         
-        try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL())
-        XCTAssertEqual(persistorSpy.persistedString, anyGeneratedOutput().generatedCode)
+        try await sut.generateAndSaveCode(
+            systemPrompt: anySystemPrompt(),
+            specsFileURL: anyURL(),
+            outputFileURL: anyURL()
+        )
+        
+        XCTAssertEqual(persistorSpy.persistedString, anyGeneratedCode())
     }
     
     func test_generateAndSaveCode_retriesUntilMaxIterationWhenProcessFails() async throws {
         let iterator = Iterator()
         let failedProcessOutput = anyFailedProcessOutput()
-        let generatorResponse = (generatedCode: anyGeneratedCode(), procesOutput: failedProcessOutput)
-        let generator = GeneratorStub(result: .success(generatorResponse))
-        let sut = makeSUT(generator: generator, iterator: iterator)
-        try await sut.generateAndSaveCode(specsFileURL: anyURL(), outputFileURL: anyURL(), maxIterationCount: 5)
+        let clientStub = ClientStub(result: .success(anyGeneratedCode()))
+        let runnerStub = RunnerStub(result: .success(failedProcessOutput))
+        let sut = makeSUT(client: clientStub, runner: runnerStub, iterator: iterator)
+        try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL(), maxIterationCount: 5)
         
         XCTAssertEqual(iterator.count, 5)
     }
 
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),
-        generator: Generator = GeneratorDummy(),
+        client: Client = ClientDummy(),
+        runner: Runner = RunnerDummy(),
         persistor: Persistor = PersistorDummy(),
         iterator: Iterator = Iterator()
     ) -> Coordinator {
-        Coordinator(reader: reader, generator: generator, persistor: persistor, iterator: iterator)
+        Coordinator(
+            reader: reader,
+            client: client,
+            runner: runner,
+            concatenator: (++),
+            persistor: persistor,
+            iterator: iterator
+        )
     }
     
     struct PersistorStub: Persistor {
@@ -147,6 +162,22 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
+    struct ClientStub: Client {
+        let result: Result<String, Error>
+        func send(systemPrompt: String, userMessage: String) async throws -> String {
+            try result.get()
+        }
+    }
+    
+    
+    struct RunnerStub: Runner {
+        let result: Result<ProcessOutput, Error>
+        func run(_ code: String) throws -> ProcessOutput {
+            try result.get()
+        }
+    }
+    
+    
     struct FileReaderDummy: FileReader {
         func read(_ url: URL) throws -> String {
             ""
@@ -161,6 +192,18 @@ class CoordinatorTests: XCTestCase {
     
     struct PersistorDummy: Persistor {
         func persist(_ string: String, outputURL: URL) throws {
+        }
+    }
+    
+    struct ClientDummy: Client {
+        func send(systemPrompt: String, userMessage: String) async throws -> String {
+            ""
+        }
+    }
+    
+    struct RunnerDummy: Runner {
+        func run(_ code: String) throws -> ProcessOutput {
+            (stdout: "", stderr: "", exitCode: 0)
         }
     }
 }
@@ -185,6 +228,10 @@ private extension CoordinatorTests {
     }
     func anyGeneratedOutput() -> Generator.Output {
         ("any generated code", procesOutput: ("any stdout", "any stdrr", 1))
+    }
+    
+    func anySystemPrompt() -> String {
+        "any system prompt"
     }
     
     private static var failedExitCode: Int { 1 }
