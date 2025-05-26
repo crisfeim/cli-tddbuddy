@@ -45,7 +45,12 @@ public class Coordinator {
     }
     
     private func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
-        let generated = try await client.send(systemPrompt: systemPrompt, userMessage: specs)
+        let messages: [Client.Message] = [
+            ["role": "system", "content": systemPrompt],
+            ["role": "user", "content": specs]
+        ]
+        
+        let generated = try await client.send(messages: messages)
         let concatenated = generated + "\n" + specs
         let processOutput = try runner.run(concatenated)
         return (generated, processOutput)

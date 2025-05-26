@@ -30,7 +30,7 @@ extension CoordinatorTests {
     
     struct ClientStub: Client {
         let result: Result<String, Error>
-        func send(systemPrompt: String, userMessage: String) async throws -> String {
+        func send(messages: [Message]) async throws -> String {
             try result.get()
         }
     }
@@ -46,7 +46,7 @@ extension CoordinatorTests {
     }
     
     struct ClientDummy: Client {
-        func send(systemPrompt: String, userMessage: String) async throws -> String {
+        func send(messages: [Message]) async throws -> String {
             ""
         }
     }

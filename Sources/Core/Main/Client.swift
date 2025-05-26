@@ -2,5 +2,6 @@
 
 
 public protocol Client {
-    func send(systemPrompt: String, userMessage: String) async throws -> String
+    typealias Message = [String: String]
+    func send(messages: [Message]) async throws -> String
 }

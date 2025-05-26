@@ -21,7 +21,7 @@ class IntegrationTests: XCTestCase {
             If your code fails to compile, the user will provide the error output for you to make adjustments.
             """
         let reader = FileManager.default
-        let client = LoggerDecorator(OllamaClient())
+        let client = OllamaClient()
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
         let iterator = LoggerDecorator(Iterator())

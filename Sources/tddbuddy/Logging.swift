@@ -20,12 +20,6 @@ public final class LoggerDecorator<T> {
     }
 }
 
-// MARK: - Client
-extension LoggerDecorator: Client where T: Client {
-    public func send(systemPrompt: String, userMessage: String) async throws -> String {
-        try await decoratee.send(systemPrompt: systemPrompt, userMessage: userMessage)
-    }
-}
 
 // MARK: - Runner
 extension LoggerDecorator: Runner where T: Runner {

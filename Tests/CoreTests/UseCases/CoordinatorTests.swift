@@ -30,9 +30,9 @@ class CoordinatorTests: XCTestCase {
    
     func test_generateAndSaveCode_sendsContentsOfReadFileToClient() async throws {
         class ClientSpy: Client {
-            var userMessage: String?
-            func send(systemPrompt: String, userMessage: String) async throws -> String {
-                self.userMessage = userMessage
+            var messages = [Message]()
+            func send(messages: [Message]) async throws -> String {
+                self.messages = messages
                 return "any generated code"
             }
         }
@@ -47,7 +47,11 @@ class CoordinatorTests: XCTestCase {
             outputFileURL: anyURL()
         )
         
-        XCTAssertEqual(clientSpy.userMessage, anyString())
+        let expectedMessages = [
+            ["role": "system", "content": anySystemPrompt()],
+            ["role": "user", "content": anyString()]
+        ]
+        XCTAssertEqual(clientSpy.messages, expectedMessages)
     }
     
     func test_generateAndSaveCode_persistsGeneratedCode() async throws {
