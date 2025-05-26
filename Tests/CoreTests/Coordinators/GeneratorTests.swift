@@ -5,17 +5,6 @@ import Core
 
 class GeneratorTests: XCTestCase {
     
-    func test_generateCode_deliversErrorOnRunnerError() async throws {
-        
-        let runner = RunnerStub(stub: .failure(anyError()))
-        let sut = makeSUT(runner: runner)
-        do {
-            let _ = try await sut.generateCode(from: anySpecs())
-            XCTFail()
-        } catch {
-            XCTAssertEqual(error as NSError, anyError())
-        }
-    }
     
     func test_generateCode_deliversOutputOnRunnerSuccess() async throws {
         

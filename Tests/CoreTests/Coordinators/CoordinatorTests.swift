@@ -47,6 +47,18 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
+    func test_generateAndSaveCode_deliversErrorOnRunnerError() async throws {
+        let runner = RunnerStub(result: .failure(anyError()))
+        let coordinator = makeSUT(runner: runner)
+        do {
+            try await coordinator.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
+            XCTFail()
+        } catch {
+            XCTAssertEqual(error as NSError, anyError())
+        }
+        
+    }
+    
     func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
         let persistor = PersistorStub(result: .failure(anyError()))
         let sut = makeSUT(persistor: persistor)
