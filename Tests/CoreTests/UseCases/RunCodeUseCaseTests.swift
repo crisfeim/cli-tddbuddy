@@ -5,7 +5,7 @@
 import XCTest
 import Core
 
-class RunCodeUseCaseTests: XCTestCase {
+extension CoordinatorTests {
   
     func test_generateAndSaveCode_deliversErrorOnRunnerError() async throws {
         let runner = RunnerStub(result: .failure(anyError()))
@@ -45,30 +45,5 @@ class RunCodeUseCaseTests: XCTestCase {
             persistor: PersistorDummy(),
             iterator: Iterator()
         )
-    }
-    
-    
-    func anyError() -> NSError {
-        NSError(domain: "", code: 0)
-    }
-    
-    func anySystemPrompt() -> String {
-        "any system prompt"
-    }
-    
-    func anyURL() -> URL {
-        URL(string: "http://any-url.com")!
-    }
-    
-    func anyGeneratedCode() -> String {
-        "any generated code"
-    }
-    
-    private func anySpecs() -> String {
-        "any specs"
-    }
-    
-    func anyProcessOutput() -> Runner.ProcessOutput {
-        ("", "", 0)
     }
 }

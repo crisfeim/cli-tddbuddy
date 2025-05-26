@@ -216,7 +216,7 @@ func XCTAssertThrowsErrorAsync<T>(
 }
 
 // MARK: - Helpers
-private extension CoordinatorTests {
+extension CoordinatorTests {
     
     func anyURL() -> URL {
         URL(string: "http://any-url.com")!
@@ -238,7 +238,7 @@ private extension CoordinatorTests {
         "any system prompt"
     }
     
-    private func anySpecs() -> String {
+    func anySpecs() -> String {
         "any specs"
     }
     
@@ -247,7 +247,7 @@ private extension CoordinatorTests {
     }
     
     private static var failedExitCode: Int { 1 }
-    private func anyFailedProcessOutput() -> Runner.ProcessOutput {
+    func anyFailedProcessOutput() -> Runner.ProcessOutput {
         (stdout: "", stderr: "", exitCode: Self.failedExitCode)
     }
 }

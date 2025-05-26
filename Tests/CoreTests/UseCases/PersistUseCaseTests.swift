@@ -5,7 +5,7 @@
 import XCTest
 import Core
 
-class PersistUseCaseTests: XCTestCase {
+extension CoordinatorTests {
     
     func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
         let persistor = PersistorStub(result: .failure(anyError()))
@@ -39,62 +39,5 @@ class PersistUseCaseTests: XCTestCase {
             persistor: persistor,
             iterator: Iterator()
         )
-    }
-    
-    struct PersistorStub: Persistor {
-        let result: Result<Void, Error>
-        func persist(_ string: String, outputURL: URL) throws {
-            try result.get()
-        }
-    }
-    
-    struct ClientStub: Client {
-        let result: Result<String, Error>
-        func send(systemPrompt: String, userMessage: String) async throws -> String {
-            try result.get()
-        }
-    }
-    
-    struct RunnerStub: Runner {
-        let result: Result<ProcessOutput, Error>
-        func run(_ code: String) throws -> ProcessOutput {
-            try result.get()
-        }
-    }
-    
-    struct FileReaderDummy: FileReader {
-        func read(_ url: URL) throws -> String {
-            ""
-        }
-    }
-   
-    func anyURL() -> URL {
-        URL(string: "http://any-url.com")!
-    }
-    
-    func anySpecs() -> String {
-        "any specs"
-    }
-    
-    func anyString() -> String {
-        "any string"
-    }
-    
-    
-    func anySystemPrompt() -> String {
-        "any system prompt"
-    }
-    
-    func anyError() -> NSError {
-        NSError(domain: "", code: 0)
-    }
-    
-    func anyGeneratedCode() -> String {
-        "any generated code"
-    }
-    
-    static let failedExitCode = 0
-    private func anyFailedProcessOutput() -> Runner.ProcessOutput {
-        (stdout: "", stderr: "", exitCode: Self.failedExitCode)
     }
 }

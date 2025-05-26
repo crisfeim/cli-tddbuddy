@@ -3,7 +3,7 @@
 import XCTest
 import Core
 
-final class ReadFileUseCaseTests: XCTest {
+extension CoordinatorTests {
     
     func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
         let reader = FileReaderStub(result: .failure(anyError()))
@@ -41,18 +41,4 @@ final class ReadFileUseCaseTests: XCTest {
             iterator: Iterator()
         )
     }
-    
-    
-    func anyError() -> NSError {
-        NSError(domain: "", code: 0)
-    }
-    
-    func anyURL() -> URL {
-        URL(string: "http://any-url.com")!
-    }
-    
-    func anySystemPrompt() -> String {
-        "any system prompt"
-    }
-    
 }
