@@ -21,11 +21,14 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversNoErrorOnReaderSuccess() async throws {
         let reader = FileReaderStub(result: .success(""))
         let sut = makeSUT(reader: reader)
-        do {
-            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-        } catch {
-            XCTFail()
-        }
+        
+        await XCTAssertNoThrowAsync(
+            try await sut.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_deliversErrorOnClientError() async throws {
@@ -44,11 +47,13 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversNoErrorOnClientSuccess() async throws {
         let client = ClientStub(result: .success("any genereted code"))
         let coordinator = makeSUT(client: client)
-        do {
-            try await coordinator.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-        } catch {
-            XCTFail()
-        }
+        await XCTAssertNoThrowAsync(
+            try await coordinator.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_deliversErrorOnRunnerError() async throws {
@@ -115,11 +120,13 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_deliversNoErrorOnPersistenceSuccess() async throws {
         let persistor = PersistorStub(result: .success(()))
         let sut = makeSUT(persistor: persistor)
-        do {
-            try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-        } catch {
-            XCTFail()
-        }
+        await XCTAssertNoThrowAsync(
+            try await sut.generateAndSaveCode(
+                systemPrompt: anySystemPrompt(),
+                specsFileURL: anyURL(),
+                outputFileURL: anyURL()
+            )
+        )
     }
     
     func test_generateAndSaveCode_sendsContentsOfReadFileToClient() async throws {
@@ -244,6 +251,19 @@ class CoordinatorTests: XCTestCase {
         func run(_ code: String) throws -> ProcessOutput {
             (stdout: "", stderr: "", exitCode: 0)
         }
+    }
+}
+
+func XCTAssertNoThrowAsync<T>(
+    _ expression: @autoclosure () async throws -> T,
+    _ message: @autoclosure () -> String = "Expected no error, but error was thrown",
+    file: StaticString = #filePath,
+    line: UInt = #line
+) async {
+    do {
+        _ = try await expression()
+    } catch {
+        XCTFail(message(), file: file, line: line)
     }
 }
 
