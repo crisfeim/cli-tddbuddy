@@ -5,32 +5,6 @@ import Core
 
 class CoordinatorTests: XCTestCase {
     
-    func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
-        let reader = FileReaderStub(result: .failure(anyError()))
-        let sut = makeSUT(reader: reader)
-        
-        await XCTAssertThrowsErrorAsync(
-            try await sut.generateAndSaveCode(
-                systemPrompt: anySystemPrompt(),
-                specsFileURL: anyURL(),
-                outputFileURL: anyURL()
-            )
-        )
-    }
-    
-    func test_generateAndSaveCode_deliversNoErrorOnReaderSuccess() async throws {
-        let reader = FileReaderStub(result: .success(""))
-        let sut = makeSUT(reader: reader)
-        
-        await XCTAssertNoThrowAsync(
-            try await sut.generateAndSaveCode(
-                systemPrompt: anySystemPrompt(),
-                specsFileURL: anyURL(),
-                outputFileURL: anyURL()
-            )
-        )
-    }
-    
     func test_generateAndSaveCode_deliversErrorOnClientError() async throws {
         let client = ClientStub(result: .failure(anyError()))
         let coordinatior = makeSUT(client: client)
@@ -207,12 +181,7 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
-    struct FileReaderStub: FileReader {
-        let result: Result<String, Error>
-        func read(_: URL) throws -> String {
-            try result.get()
-        }
-    }
+
     
     struct ClientStub: Client {
         let result: Result<String, Error>
@@ -235,22 +204,29 @@ class CoordinatorTests: XCTestCase {
             ""
         }
     }
-    
-    struct PersistorDummy: Persistor {
-        func persist(_ string: String, outputURL: URL) throws {
-        }
+}
+
+struct FileReaderStub: FileReader {
+    let result: Result<String, Error>
+    func read(_: URL) throws -> String {
+        try result.get()
     }
-    
-    struct ClientDummy: Client {
-        func send(systemPrompt: String, userMessage: String) async throws -> String {
-            ""
-        }
+}
+
+struct PersistorDummy: Persistor {
+    func persist(_ string: String, outputURL: URL) throws {
     }
-    
-    struct RunnerDummy: Runner {
-        func run(_ code: String) throws -> ProcessOutput {
-            (stdout: "", stderr: "", exitCode: 0)
-        }
+}
+
+struct ClientDummy: Client {
+    func send(systemPrompt: String, userMessage: String) async throws -> String {
+        ""
+    }
+}
+
+struct RunnerDummy: Runner {
+    func run(_ code: String) throws -> ProcessOutput {
+        (stdout: "", stderr: "", exitCode: 0)
     }
 }
 
