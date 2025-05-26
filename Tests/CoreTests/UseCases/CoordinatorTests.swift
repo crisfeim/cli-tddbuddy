@@ -30,30 +30,6 @@ class CoordinatorTests: XCTestCase {
         )
     }
     
-    func test_generateAndSaveCode_deliversErrorOnRunnerError() async throws {
-        let runner = RunnerStub(result: .failure(anyError()))
-        let sut = makeSUT(runner: runner)
-        await XCTAssertThrowsErrorAsync(
-            try await sut.generateAndSaveCode(
-                systemPrompt: anySystemPrompt(),
-                specsFileURL: anyURL(),
-                outputFileURL: anyURL()
-            )
-        )
-    }
-    
-    func test_generateAndSaveCode_deliversOutputOnRunnerSuccess() async throws {
-        let runner = RunnerStub(result: .success(anyProcessOutput()))
-        let sut = makeSUT(runner: runner)
-        let result = try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
-        
-        let output = result.procesOutput
-        anyProcessOutput() .* { expected in
-            XCTAssertEqual(output.stderr, expected.stderr)
-            XCTAssertEqual(output.stdout, expected.stdout)
-            XCTAssertEqual(output.exitCode, expected.exitCode)
-        }
-    }
     
     func test_generateAndSaveCode_usesConcatenatedCodeAsRunnerInputInTheRightOrder() async throws {
         class RunnerSpy: Runner {
@@ -190,21 +166,21 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
-    
-    struct RunnerStub: Runner {
-        let result: Result<ProcessOutput, Error>
-        func run(_ code: String) throws -> ProcessOutput {
-            try result.get()
-        }
-    }
-    
-    
     struct FileReaderDummy: FileReader {
         func read(_ url: URL) throws -> String {
             ""
         }
     }
 }
+
+
+struct RunnerStub: Runner {
+    let result: Result<ProcessOutput, Error>
+    func run(_ code: String) throws -> ProcessOutput {
+        try result.get()
+    }
+}
+
 
 struct FileReaderStub: FileReader {
     let result: Result<String, Error>
@@ -227,6 +203,12 @@ struct ClientDummy: Client {
 struct RunnerDummy: Runner {
     func run(_ code: String) throws -> ProcessOutput {
         (stdout: "", stderr: "", exitCode: 0)
+    }
+}
+
+struct FileReaderDummy: FileReader {
+    func read(_ url: URL) throws -> String {
+        ""
     }
 }
 
