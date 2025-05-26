@@ -50,18 +50,6 @@ extension LoggerDecorator: FileReader where T: FileReader {
     }
 }
 
-// MARK: - Generator
-extension LoggerDecorator: Coordinator.Generator where T: Coordinator.Generator {
-    public func generateCode(from specs: String) async throws -> Output {
-        let output = try await decoratee.generateCode(from: specs)
-        
-        output.procesOutput.exitCode == 0
-        ? Logger.info("✅ Code generated successfully")
-        : ()
-        
-        return output
-    }
-}
 
 // MARK: - Iterator
 extension LoggerDecorator: Coordinator.Iterator where T: Coordinator.Iterator {

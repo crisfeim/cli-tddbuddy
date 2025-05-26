@@ -10,11 +10,6 @@ public class Coordinator {
         func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws
     }
     
-    public protocol Generator {
-        typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
-        func generateCode(from specs: String) async throws -> Output
-    }
-    
     public typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
    
     private let reader: FileReader
@@ -43,7 +38,7 @@ public class Coordinator {
     @discardableResult
     public func generateAndSaveCode(systemPrompt: String, specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Output {
         let specs = try reader.read(specsFileURL)
-        var output: Generator.Output?
+        var output: Output?
         try await iterator.iterate(nTimes: maxIterationCount, until: {output?.procesOutput.exitCode == 0}) {
             output = try await self.generateCode(systemPrompt: systemPrompt, from: specs)
         }
