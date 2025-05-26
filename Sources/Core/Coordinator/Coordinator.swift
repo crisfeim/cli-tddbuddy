@@ -5,7 +5,6 @@ import Foundation
 public class Coordinator {
     
     public protocol Iterator {
-        var count: Int {get}
         func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws
     }
     

@@ -73,14 +73,29 @@ class CoordinatorTests: XCTestCase {
     }
     
     func test_generateAndSaveCode_retriesUntilMaxIterationWhenProcessFails() async throws {
-        let iterator = Iterator()
+        
+        class IteratorSpy: Iterator {
+            var currentIteration = 0
+            override func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
+                try await super.iterate(nTimes: n, until: condition, action: {
+                    currentIteration += 1
+                    try await action()
+                })
+            }
+        }
+        let iterator = IteratorSpy()
         let failedProcessOutput = anyFailedProcessOutput()
         let clientStub = ClientStub(result: .success(anyGeneratedCode()))
         let runnerStub = RunnerStub(result: .success(failedProcessOutput))
         let sut = makeSUT(client: clientStub, runner: runnerStub, iterator: iterator)
-        try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL(), maxIterationCount: 5)
+        try await sut.generateAndSaveCode(
+            systemPrompt: anySystemPrompt(),
+            specsFileURL: anyURL(),
+            outputFileURL: anyURL(),
+            maxIterationCount: 5
+        )
         
-        XCTAssertEqual(iterator.count, 5)
+        XCTAssertEqual(iterator.currentIteration, 5)
     }
 
     private func makeSUT(

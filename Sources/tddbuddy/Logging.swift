@@ -53,10 +53,11 @@ extension LoggerDecorator: FileReader where T: FileReader {
 
 // MARK: - Iterator
 extension LoggerDecorator: Coordinator.Iterator where T: Coordinator.Iterator {
-    public var count: Int {decoratee.count}
     public func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
-        let action: () async throws -> Void = { [decoratee] in
-            Logger.info("🔄 Iterating \(decoratee.count) / \(n) times...")
+        var currentCount = 0
+        let action: () async throws -> Void = {
+            Logger.info("🔄 Iterating \(currentCount) / \(n) times...")
+            currentCount += 1
             try await action()
         }
         try await decoratee.iterate(nTimes: n, until: condition, action: action)
