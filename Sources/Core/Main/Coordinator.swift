@@ -44,7 +44,7 @@ public class Coordinator {
         return output!
     }
     
-    public func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
+    private func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
         let generated = try await client.send(systemPrompt: systemPrompt, userMessage: specs)
         let concatenated = generated ++ specs
         let processOutput = try runner.run(concatenated)
