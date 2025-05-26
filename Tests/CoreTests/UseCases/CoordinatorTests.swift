@@ -97,6 +97,49 @@ class CoordinatorTests: XCTestCase {
         
         XCTAssertEqual(iterator.currentIteration, 5)
     }
+    
+    func test_generateAndSaveCode_retiresUntilSucessWhenProcessSucceedsAfterNRetries() async throws {
+        class IteratorSpy: Iterator {
+            var currentIteration = 0
+            override func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
+                try await super.iterate(nTimes: n, until: condition, action: {
+                    currentIteration += 1
+                    try await action()
+                })
+            }
+        }
+        
+        class RunnerStub: Runner {
+            var results = [ProcessOutput]()
+            
+            init(results: [ProcessOutput]) {
+                self.results = results
+            }
+            
+            func run(_ code: String) throws -> ProcessOutput {
+                results.removeFirst()
+            }
+        }
+        
+        let iterator = IteratorSpy()
+        let clientStub = ClientStub(result: .success(anyGeneratedCode()))
+        let runnerStub = RunnerStub(results: [
+            anyFailedProcessOutput(),
+            anyFailedProcessOutput(),
+            anyFailedProcessOutput(),
+            anySuccessProcessOutput()
+        ])
+        
+        let sut = makeSUT(client: clientStub, runner: runnerStub, iterator: iterator)
+        try await sut.generateAndSaveCode(
+            systemPrompt: anySystemPrompt(),
+            specsFileURL: anyURL(),
+            outputFileURL: anyURL(),
+            maxIterationCount: 5
+        )
+        
+        XCTAssertEqual(iterator.currentIteration, 4)
+    }
 
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),

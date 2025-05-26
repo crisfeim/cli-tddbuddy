@@ -29,7 +29,7 @@ extension CoordinatorTests {
         "any specs"
     }
     
-    func anyProcessOutput() -> Runner.ProcessOutput {
+    func anySuccessProcessOutput() -> Runner.ProcessOutput {
         ("", "", 0)
     }
     

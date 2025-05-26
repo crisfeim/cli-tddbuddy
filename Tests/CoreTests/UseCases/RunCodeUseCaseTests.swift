@@ -20,7 +20,7 @@ extension CoordinatorTests {
     }
     
     func test_generateAndSaveCode_deliversOutputOnRunnerSuccess() async throws {
-        let runner = RunnerStub(result: .success(anyProcessOutput()))
+        let runner = RunnerStub(result: .success(anySuccessProcessOutput()))
         let sut = makeSUT(runner: runner)
         let result = try await sut.generateAndSaveCode(
             systemPrompt: anySystemPrompt(),
@@ -29,7 +29,7 @@ extension CoordinatorTests {
         )
         
         let output = result.procesOutput
-        anyProcessOutput() .* { expected in
+        anySuccessProcessOutput() .* { expected in
             XCTAssertEqual(output.stderr, expected.stderr)
             XCTAssertEqual(output.stdout, expected.stdout)
             XCTAssertEqual(output.exitCode, expected.exitCode)
