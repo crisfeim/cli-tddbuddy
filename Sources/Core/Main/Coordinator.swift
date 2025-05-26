@@ -33,23 +33,30 @@ public class Coordinator {
     @discardableResult
     public func generateAndSaveCode(systemPrompt: String, specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Output {
         let specs = try reader.read(specsFileURL)
+        var previousOutput: Output?
         let output = try await iterator.iterate(
             nTimes: maxIterationCount,
-            until: { isSuccess($0) }
+            until: { previousOutput = $0 ; return isSuccess($0) }
         ) {
-            try await self.generateCode(systemPrompt: systemPrompt, from: specs)
+            try await self.generateCode(systemPrompt: systemPrompt, from: specs, previous: previousOutput)
         }
         
         try persistor.persist(output.generatedCode, outputURL: outputFileURL)
         return output
     }
     
-    private func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
-        let messages: [Client.Message] = [
+    private func generateCode(systemPrompt: String, from specs: String, previous: Output?) async throws -> Output {
+        var messages: [Client.Message] = [
             ["role": "system", "content": systemPrompt],
             ["role": "user", "content": specs]
         ]
         
+        if let previous {
+            messages.append([
+                "role": "assistant",
+                "content": "failed attempt.\ncode:\(previous.generatedCode)\nerror:\(previous.procesOutput.stderr)"
+            ])
+        }
         let generated = try await client.send(messages: messages)
         let concatenated = generated + "\n" + specs
         let processOutput = try runner.run(concatenated)

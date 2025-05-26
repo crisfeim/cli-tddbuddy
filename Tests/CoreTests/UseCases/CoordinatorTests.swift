@@ -29,14 +29,6 @@ class CoordinatorTests: XCTestCase {
     }
    
     func test_generateAndSaveCode_sendsContentsOfReadFileToClient() async throws {
-        class ClientSpy: Client {
-            var messages = [Message]()
-            func send(messages: [Message]) async throws -> String {
-                self.messages = messages
-                return "any generated code"
-            }
-        }
-        
         let reader = FileReaderStub(result: .success(anyString()))
         let clientSpy = ClientSpy()
         let sut = makeSUT(reader: reader, client: clientSpy)
@@ -51,7 +43,7 @@ class CoordinatorTests: XCTestCase {
             ["role": "system", "content": anySystemPrompt()],
             ["role": "user", "content": anyString()]
         ]
-        XCTAssertEqual(clientSpy.messages, expectedMessages)
+        XCTAssertEqual(clientSpy.messages, [expectedMessages])
     }
     
     func test_generateAndSaveCode_persistsGeneratedCode() async throws {
@@ -145,6 +137,29 @@ class CoordinatorTests: XCTestCase {
         XCTAssertEqual(iterator.currentIteration, 4)
     }
 
+    
+    func test_generateAndSaveCode_buildsMessagesWithPreviousFeedbackWhenIterationFails() async throws {
+        let reader = FileReaderStub(result: .success(anySpecs()))
+        let client = ClientSpy()
+        let runner = RunnerStub(result: .success(anyFailedProcessOutput()))
+        let sut = makeSUT(reader: reader, client: client, runner: runner)
+        
+        let _ = try await sut.generateAndSaveCode(
+            systemPrompt: anySystemPrompt(),
+            specsFileURL: anyURL(),
+            outputFileURL: anyURL(),
+            maxIterationCount: 2
+        )
+        
+        let expectedMessages = [
+            ["role": "system", "content": anySystemPrompt()],
+            ["role": "user", "content": anySpecs()],
+            ["role": "assistant", "content": "failed attempt.\ncode:\(anyGeneratedCode())\nerror:\(anyFailedProcessOutput().stderr)"]
+        ]
+        
+        XCTAssertEqual(client.messages.last?.normalized(), expectedMessages.normalized())
+        
+    }
     private func makeSUT(
         reader: FileReader = FileReaderDummy(),
         client: Client = ClientDummy(),
@@ -162,3 +177,8 @@ class CoordinatorTests: XCTestCase {
     }
 }
 
+private extension [[String: String]] {
+    func normalized() -> [NSDictionary] {
+        map { $0 as NSDictionary }
+    }
+}

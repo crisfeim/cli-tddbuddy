@@ -63,3 +63,14 @@ extension CoordinatorTests {
         }
     }
 }
+
+// MARK: - Spies
+extension CoordinatorTests {
+    class ClientSpy: Client {
+        var messages = [[Message]]()
+        func send(messages: [Message]) async throws -> String {
+            self.messages.append(messages)
+            return "any generated code"
+        }
+    }
+}

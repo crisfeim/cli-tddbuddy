@@ -35,6 +35,6 @@ extension CoordinatorTests {
     
     private static var failedExitCode: Int { 1 }
     func anyFailedProcessOutput() -> Runner.ProcessOutput {
-        (stdout: "", stderr: "", exitCode: Self.failedExitCode)
+        (stdout: "", stderr: "any stderr error", exitCode: Self.failedExitCode)
     }
 }
