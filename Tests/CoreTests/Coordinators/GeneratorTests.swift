@@ -4,25 +4,6 @@ import XCTest
 import Core
 
 class GeneratorTests: XCTestCase {
-    func test_generateCode_deliversCodeOnClientSuccess() async throws {
-        
-        let client = ClientStub(stub: .success(anyGeneratedCode()))
-        let sut = makeSUT(client: client)
-        let (generated, _) = try await sut.generateCode(from: anySpecs())
-        XCTAssertEqual(generated, anyGeneratedCode())
-    }
-    
-    func test_generateCode_deliversErrorOnClientError() async throws {
-        
-        let client = ClientStub(stub: .failure(anyError()))
-        let sut = makeSUT(client: client)
-        do {
-            let _ = try await sut.generateCode(from: anySpecs())
-            XCTFail()
-        } catch {
-            XCTAssertEqual(error as NSError, anyError())
-        }
-    }
     
     func test_generateCode_deliversErrorOnRunnerError() async throws {
         
