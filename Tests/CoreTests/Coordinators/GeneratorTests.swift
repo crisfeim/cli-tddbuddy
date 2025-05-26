@@ -4,23 +4,6 @@ import XCTest
 import Core
 
 class GeneratorTests: XCTestCase {
-
-    func test_generatedCode_usesConcatenatedCodeAsRunnerInput() async throws {
-        class RunnerSpy: Runner {
-            var code: String?
-            func run(_ code: String) throws -> Runner.ProcessOutput {
-                self.code = code
-                return ("", "", 0)
-            }
-        }
-        
-        let clientStub = ClientStub(stub: .success(anyGeneratedCode()))
-        let runner = RunnerSpy()
-        let sut = makeSUT(client: clientStub, runner: runner, concatenator: ++)
-        _ = try await sut.generateCode(from: anySpecs())
-        XCTAssertEqual(runner.code?.contains(anySpecs()), true)
-        XCTAssertEqual(runner.code?.contains(anyGeneratedCode()), true)
-    }
     
     func test_generateCode_sendsSpecsToClient() async throws {
         class ClientSpy: Client {

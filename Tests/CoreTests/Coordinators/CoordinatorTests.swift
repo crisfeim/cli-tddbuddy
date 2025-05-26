@@ -71,6 +71,30 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
+    func test_generateAndSaveCode_usesConcatenatedCodeAsRunnerInputInTheRightOrder() async throws {
+        class RunnerSpy: Runner {
+            var code: String?
+            func run(_ code: String) throws -> Runner.ProcessOutput {
+                self.code = code
+                return ("", "", 0)
+            }
+        }
+        
+        let readerStub = FileReaderStub(result: .success(anySpecs()))
+        let clientStub = ClientStub(result: .success(anyGeneratedCode()))
+        let runnerSpy = RunnerSpy()
+        
+        let coordinator = makeSUT(reader: readerStub, client: clientStub, runner: runnerSpy)
+        try await coordinator.generateAndSaveCode(
+            systemPrompt: anySystemPrompt(),
+            specsFileURL: anyURL(),
+            outputFileURL: anyURL()
+        )
+        
+        XCTAssertEqual(runnerSpy.code, "\(anyGeneratedCode())\n\(anySpecs())")
+    }
+    
+    
     func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
         let persistor = PersistorStub(result: .failure(anyError()))
         let sut = makeSUT(persistor: persistor)
