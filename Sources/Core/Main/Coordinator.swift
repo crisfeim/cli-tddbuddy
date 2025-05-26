@@ -46,13 +46,8 @@ public class Coordinator {
     
     private func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
         let generated = try await client.send(systemPrompt: systemPrompt, userMessage: specs)
-        let concatenated = generated ++ specs
+        let concatenated = generated + "\n" + specs
         let processOutput = try runner.run(concatenated)
         return (generated, processOutput)
     }
-}
-
-infix operator ++
-public func ++(lhs: String, rhs: String) -> String {
-    lhs + "\n" + rhs
 }
