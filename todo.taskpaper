@@ -2,4 +2,3 @@
 - Test CLI through `TDDBuddy.main() ` testing.
 - Allow persisting attempts with logs.
 - Add more LLM Clients and allow customization from command line.
-- Simplify logic by making iterator return output: `func iterate<T>(nTimes n: Int, until condition: () -> Bool, action: () async throws -> T) async throws -> T`

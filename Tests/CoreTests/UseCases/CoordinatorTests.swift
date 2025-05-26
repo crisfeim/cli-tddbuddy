@@ -76,10 +76,10 @@ class CoordinatorTests: XCTestCase {
         
         class IteratorSpy: Iterator {
             var currentIteration = 0
-            override func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
-                try await super.iterate(nTimes: n, until: condition, action: {
+            override func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T {
+                return try await super.iterate(nTimes: n, until: condition, action: {
                     currentIteration += 1
-                    try await action()
+                    return try await action()
                 })
             }
         }
@@ -101,10 +101,10 @@ class CoordinatorTests: XCTestCase {
     func test_generateAndSaveCode_retiresUntilSucessWhenProcessSucceedsAfterNRetries() async throws {
         class IteratorSpy: Iterator {
             var currentIteration = 0
-            override func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
+            override func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T {
                 try await super.iterate(nTimes: n, until: condition, action: {
                     currentIteration += 1
-                    try await action()
+                    return try await action()
                 })
             }
         }

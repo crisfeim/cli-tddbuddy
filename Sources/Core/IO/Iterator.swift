@@ -2,11 +2,13 @@
 
 open class Iterator: Coordinator.Iterator {
     public init() {}
-    open func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws {
-        var currentCount = 0
-        while currentCount < n && !condition() {
-            currentCount += 1
-            try await action()
+    open func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T {
+        var results = [T]()
+        while results.count < n {
+            let result = try await action()
+            if condition(result) { return result }
+            results.append(result)
         }
+        return results.first!
     }
 }

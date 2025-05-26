@@ -5,7 +5,7 @@ import Foundation
 public class Coordinator {
     
     public protocol Iterator {
-        func iterate(nTimes n: Int, until condition: () -> Bool, action: () async throws -> Void) async throws
+        func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T
     }
     
     public typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
@@ -33,15 +33,15 @@ public class Coordinator {
     @discardableResult
     public func generateAndSaveCode(systemPrompt: String, specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Output {
         let specs = try reader.read(specsFileURL)
-        var output: Output?
-        try await iterator.iterate(nTimes: maxIterationCount, until: {output?.procesOutput.exitCode == 0}) {
-            output = try await self.generateCode(systemPrompt: systemPrompt, from: specs)
+        let output = try await iterator.iterate(
+            nTimes: maxIterationCount,
+            until: { isSuccess($0) }
+        ) {
+            try await self.generateCode(systemPrompt: systemPrompt, from: specs)
         }
         
-        try output.flatMap { unwrapped in
-            try persistor.persist(unwrapped.generatedCode, outputURL: outputFileURL)
-        }
-        return output!
+        try persistor.persist(output.generatedCode, outputURL: outputFileURL)
+        return output
     }
     
     private func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
@@ -50,4 +50,6 @@ public class Coordinator {
         let processOutput = try runner.run(concatenated)
         return (generated, processOutput)
     }
+    
+    private func isSuccess(_ o: Output) -> Bool { o.procesOutput.exitCode == 0 }
 }
