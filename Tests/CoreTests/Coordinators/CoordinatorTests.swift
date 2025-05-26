@@ -4,7 +4,6 @@ import XCTest
 import Core
 
 class CoordinatorTests: XCTestCase {
-    typealias Generator = Coordinator.Generator
     
     func test_generateAndSaveCode_deliversErrorOnReaderError() async throws {
         let reader = FileReaderStub(result: .failure(anyError()))
@@ -148,13 +147,6 @@ class CoordinatorTests: XCTestCase {
         }
     }
     
-    struct GeneratorStub: Generator {
-        let result: Result<Generator.Output, Error>
-        func generateCode(from specs: String) async throws -> Output {
-            try result.get()
-        }
-    }
-    
     struct FileReaderStub: FileReader {
         let result: Result<String, Error>
         func read(_: URL) throws -> String {
@@ -181,12 +173,6 @@ class CoordinatorTests: XCTestCase {
     struct FileReaderDummy: FileReader {
         func read(_ url: URL) throws -> String {
             ""
-        }
-    }
-    
-    struct GeneratorDummy: Generator {
-        func generateCode(from specs: String) async throws -> Output {
-            ("", procesOutput: ("", "", 0))
         }
     }
     
@@ -225,9 +211,6 @@ private extension CoordinatorTests {
     
     func anyString() -> String {
         "any string"
-    }
-    func anyGeneratedOutput() -> Generator.Output {
-        ("any generated code", procesOutput: ("any stdout", "any stdrr", 1))
     }
     
     func anySystemPrompt() -> String {
