@@ -5,6 +5,9 @@ import Core
 
 @main
 struct TDDBuddy: AsyncParsableCommand {
+    @Option(name: .shortAndLong, help: "Custom system prompt to use instead of the default.")
+    var prompt: String?
+    
     @Option(name: .shortAndLong, help: "The path to the specs file.")
     var input: String
 
@@ -32,7 +35,7 @@ struct TDDBuddy: AsyncParsableCommand {
         let outputURL = URL(fileURLWithPath: output)
 
         let result = try await coordinator.generateAndSaveCode(
-            systemPrompt: TDDBuddy.systemPrompt,
+            systemPrompt: prompt ?? TDDBuddy.systemPrompt,
             specsFileURL: inputURL,
             outputFileURL: outputURL,
             maxIterationCount: iterations
