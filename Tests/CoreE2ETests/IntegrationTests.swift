@@ -29,7 +29,6 @@ class IntegrationTests: XCTestCase {
             reader: reader,
             client: client,
             runner: runner,
-            concatenator: (++),
             persistor: persistor,
             iterator: iterator
         )

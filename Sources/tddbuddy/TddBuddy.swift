@@ -24,7 +24,6 @@ struct TDDBuddy: AsyncParsableCommand {
             reader: FileManager.default,
             client: client,
             runner: runner,
-            concatenator: (++),
             persistor: persistor,
             iterator: iterator
         )

@@ -182,7 +182,6 @@ class CoordinatorTests: XCTestCase {
             reader: reader,
             client: client,
             runner: runner,
-            concatenator: (++),
             persistor: persistor,
             iterator: iterator
         )

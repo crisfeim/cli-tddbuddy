@@ -2,7 +2,6 @@
 
 import Foundation
 
-public typealias Concatenator = (String, String) -> String
 public class Coordinator {
     
     public protocol Iterator {
@@ -15,7 +14,6 @@ public class Coordinator {
     private let reader: FileReader
     private let client: Client
     private let runner: Runner
-    private let concatenator:Concatenator
     private let persistor: Persistor
     private let iterator: Iterator
     
@@ -23,14 +21,12 @@ public class Coordinator {
         reader: FileReader,
         client: Client,
         runner: Runner,
-        concatenator: @escaping Concatenator,
         persistor: Persistor,
         iterator: Iterator
     ) {
         self.reader = reader
         self.client = client
         self.runner = runner
-        self.concatenator = concatenator
         self.persistor = persistor
         self.iterator = iterator
     }
@@ -51,7 +47,7 @@ public class Coordinator {
     
     public func generateCode(systemPrompt: String, from specs: String) async throws -> Output {
         let generated = try await client.send(systemPrompt: systemPrompt, userMessage: specs)
-        let concatenated = concatenator(generated, specs)
+        let concatenated = generated ++ specs
         let processOutput = try runner.run(concatenated)
         return (generated, processOutput)
     }
