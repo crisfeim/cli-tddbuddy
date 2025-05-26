@@ -46,9 +46,9 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversNoErrorOnClientSuccess() async throws {
         let client = ClientStub(result: .success("any genereted code"))
-        let coordinator = makeSUT(client: client)
+        let sut = makeSUT(client: client)
         await XCTAssertNoThrowAsync(
-            try await coordinator.generateAndSaveCode(
+            try await sut.generateAndSaveCode(
                 systemPrompt: anySystemPrompt(),
                 specsFileURL: anyURL(),
                 outputFileURL: anyURL()
@@ -58,9 +58,9 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversErrorOnRunnerError() async throws {
         let runner = RunnerStub(result: .failure(anyError()))
-        let coordinator = makeSUT(runner: runner)
+        let sut = makeSUT(runner: runner)
         await XCTAssertThrowsErrorAsync(
-            try await coordinator.generateAndSaveCode(
+            try await sut.generateAndSaveCode(
                 systemPrompt: anySystemPrompt(),
                 specsFileURL: anyURL(),
                 outputFileURL: anyURL()
@@ -70,8 +70,8 @@ class CoordinatorTests: XCTestCase {
     
     func test_generateAndSaveCode_deliversOutputOnRunnerSuccess() async throws {
         let runner = RunnerStub(result: .success(anyProcessOutput()))
-        let coordinator = makeSUT(runner: runner)
-        let result = try await coordinator.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
+        let sut = makeSUT(runner: runner)
+        let result = try await sut.generateAndSaveCode(systemPrompt: anySystemPrompt(), specsFileURL: anyURL(), outputFileURL: anyURL())
         
         let output = result.procesOutput
         anyProcessOutput() .* { expected in
@@ -94,8 +94,8 @@ class CoordinatorTests: XCTestCase {
         let clientStub = ClientStub(result: .success(anyGeneratedCode()))
         let runnerSpy = RunnerSpy()
         
-        let coordinator = makeSUT(reader: readerStub, client: clientStub, runner: runnerSpy)
-        try await coordinator.generateAndSaveCode(
+        let sut = makeSUT(reader: readerStub, client: clientStub, runner: runnerSpy)
+        try await sut.generateAndSaveCode(
             systemPrompt: anySystemPrompt(),
             specsFileURL: anyURL(),
             outputFileURL: anyURL()
