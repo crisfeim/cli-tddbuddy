@@ -2,6 +2,7 @@
 
 import Foundation
 
+public typealias Concatenator = (String, String) -> String
 public class Coordinator {
     
     public protocol Iterator {
@@ -19,7 +20,7 @@ public class Coordinator {
     private let reader: FileReader
     private let client: Client
     private let runner: Runner
-    private let concatenator: Concatenator
+    private let concatenator:Concatenator
     private let persistor: Persistor
     private let iterator: Iterator
     
