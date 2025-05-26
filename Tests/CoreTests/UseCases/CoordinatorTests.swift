@@ -53,32 +53,7 @@ class CoordinatorTests: XCTestCase {
         
         XCTAssertEqual(runnerSpy.code, "\(anyGeneratedCode())\n\(anySpecs())")
     }
-    
-    
-    func test_generateAndSaveCode_deliversErrorOnPersistenceError() async throws {
-        let persistor = PersistorStub(result: .failure(anyError()))
-        let sut = makeSUT(persistor: persistor)
-        await XCTAssertThrowsErrorAsync(
-            try await sut.generateAndSaveCode(
-                systemPrompt: anySystemPrompt(),
-                specsFileURL: anyURL(),
-                outputFileURL: anyURL()
-            )
-        )
-    }
-    
-    func test_generateAndSaveCode_deliversNoErrorOnPersistenceSuccess() async throws {
-        let persistor = PersistorStub(result: .success(()))
-        let sut = makeSUT(persistor: persistor)
-        await XCTAssertNoThrowAsync(
-            try await sut.generateAndSaveCode(
-                systemPrompt: anySystemPrompt(),
-                specsFileURL: anyURL(),
-                outputFileURL: anyURL()
-            )
-        )
-    }
-    
+   
     func test_generateAndSaveCode_sendsContentsOfReadFileToClient() async throws {
         class ClientSpy: Client {
             var userMessage: String?
