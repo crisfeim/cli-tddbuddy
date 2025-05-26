@@ -53,16 +53,8 @@ func test_adder() {
 Pass the path of the file to _TestBuddy_:
 
 ```shell
-tddbudy specs.swift specs-output.swift
+tddbuddy \
+  --input adder.swift \
+  --output adder-generated.swift \
+  --iterations 5
 ```
-Generated output file is created (generated implementation may vary):
-
-```swift
-/specs-output.swift
-struct Adder {
-  let a: Int
-  let b: Int
-  var result: Int { a + b}
-}
-```
-
