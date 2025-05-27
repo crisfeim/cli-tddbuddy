@@ -69,72 +69,46 @@ class CoordinatorTests: XCTestCase {
     }
     
     func test_generateAndSaveCode_retriesUntilMaxIterationWhenProcessFails() async throws {
-        
-        class IteratorSpy: Iterator {
-            var currentIteration = 0
-            override func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T {
-                return try await super.iterate(nTimes: n, until: condition, action: {
-                    currentIteration += 1
-                    return try await action()
-                })
-            }
-        }
-        let iterator = IteratorSpy()
-        let failedProcessOutput = anyFailedProcessOutput()
         let clientStub = ClientStub(result: .success(anyGeneratedCode()))
-        let runnerStub = RunnerStub(result: .success(failedProcessOutput))
-        let sut = makeSUT(client: clientStub, runner: runnerStub, iterator: iterator)
+        let runnerStub = RunnerStubResults(results: [
+            anyFailedProcessOutput(),
+            anyFailedProcessOutput(),
+            anyFailedProcessOutput()
+        ])
+        
+        let sut = makeSUT(client: clientStub, runner: runnerStub)
         try await sut.generateAndSaveCode(
             systemPrompt: anySystemPrompt(),
             specsFileURL: anyURL(),
             outputFileURL: anyURL(),
-            maxIterationCount: 5
+            maxIterationCount: 3
         )
         
-        XCTAssertEqual(iterator.currentIteration, 5)
+        XCTAssertEqual(runnerStub.results.count, 0)
     }
     
     func test_generateAndSaveCode_retiresUntilSucessWhenProcessSucceedsAfterNRetries() async throws {
-        class IteratorSpy: Iterator {
-            var currentIteration = 0
-            override func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T {
-                try await super.iterate(nTimes: n, until: condition, action: {
-                    currentIteration += 1
-                    return try await action()
-                })
-            }
-        }
-        
-        class RunnerStub: Runner {
-            var results = [ProcessOutput]()
-            
-            init(results: [ProcessOutput]) {
-                self.results = results
-            }
-            
-            func run(_ code: String) throws -> ProcessOutput {
-                results.removeFirst()
-            }
-        }
-        
-        let iterator = IteratorSpy()
         let clientStub = ClientStub(result: .success(anyGeneratedCode()))
-        let runnerStub = RunnerStub(results: [
+        let runnerStub = RunnerStubResults(results: [
             anyFailedProcessOutput(),
             anyFailedProcessOutput(),
             anyFailedProcessOutput(),
             anySuccessProcessOutput()
         ])
-        
-        let sut = makeSUT(client: clientStub, runner: runnerStub, iterator: iterator)
-        try await sut.generateAndSaveCode(
+
+       try await makeSUT(client: clientStub, runner: runnerStub).generateAndSaveCode(
             systemPrompt: anySystemPrompt(),
             specsFileURL: anyURL(),
             outputFileURL: anyURL(),
             maxIterationCount: 5
-        )
+        ) .* {
+            XCTAssertEqual($0.generatedCode, anyGeneratedCode())
+            XCTAssertEqual($0.procesOutput.stderr, anySuccessProcessOutput().stderr)
+            XCTAssertEqual($0.procesOutput.stdout, anySuccessProcessOutput().stdout)
+            XCTAssertEqual($0.procesOutput.exitCode, anySuccessProcessOutput().exitCode)
+        }
         
-        XCTAssertEqual(iterator.currentIteration, 4)
+        XCTAssertEqual(runnerStub.results.count, 0)
     }
 
     
@@ -164,15 +138,13 @@ class CoordinatorTests: XCTestCase {
         reader: FileReader = FileReaderDummy(),
         client: Client = ClientDummy(),
         runner: Runner = RunnerDummy(),
-        persistor: Persistor = PersistorDummy(),
-        iterator: Iterator = Iterator()
+        persistor: Persistor = PersistorDummy()
     ) -> Coordinator {
         Coordinator(
             reader: reader,
             client: client,
             runner: runner,
-            persistor: persistor,
-            iterator: iterator
+            persistor: persistor
         )
     }
 }

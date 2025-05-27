@@ -33,8 +33,7 @@ extension CoordinatorTests {
             reader: FileReaderDummy(),
             client: client,
             runner: RunnerDummy(),
-            persistor: PersistorDummy(),
-            iterator: Iterator()
+            persistor: PersistorDummy()
         )
     }
 }

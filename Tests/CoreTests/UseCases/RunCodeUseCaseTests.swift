@@ -42,17 +42,7 @@ extension CoordinatorTests {
             reader: FileReaderDummy(),
             client: ClientDummy(),
             runner: runner,
-            persistor: PersistorDummy(),
-            iterator: Iterator()
+            persistor: PersistorDummy()
         )
     }
-}
-
-infix operator .*: AdditionPrecedence
-
-@discardableResult
-private func .*<T>(lhs: T, rhs: (inout T) -> Void) -> T {
-  var copy = lhs
-  rhs(&copy)
-  return copy
 }

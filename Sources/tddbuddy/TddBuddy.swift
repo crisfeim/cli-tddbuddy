@@ -21,14 +21,12 @@ struct TDDBuddy: AsyncParsableCommand {
         let client = OllamaClient()
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
-        let iterator = LoggerDecorator(Iterator())
 
         let coordinator = Coordinator(
             reader: FileManager.default,
             client: client,
             runner: runner,
-            persistor: persistor,
-            iterator: iterator
+            persistor: persistor
         )
 
         let inputURL = URL(fileURLWithPath: input)

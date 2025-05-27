@@ -13,6 +13,17 @@ extension CoordinatorTests {
         }
     }
     
+    class RunnerStubResults: Runner {
+        var results = [ProcessOutput]()
+        
+        init(results: [ProcessOutput]) {
+            self.results = results
+        }
+        
+        func run(_ code: String) throws -> ProcessOutput {
+            results.removeFirst()
+        }
+    }
     
     struct FileReaderStub: FileReader {
         let result: Result<String, Error>

@@ -24,13 +24,11 @@ class IntegrationTests: XCTestCase {
         let client = OllamaClient()
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
-        let iterator = LoggerDecorator(Iterator())
         let sut = Coordinator(
             reader: reader,
             client: client,
             runner: runner,
-            persistor: persistor,
-            iterator: iterator
+            persistor: persistor
         )
         let adderSpecs = specsURL("adder.swift.txt")
         let tmpURL = FileManager.default.temporaryDirectory.appendingPathComponent("adder.swift.txt")

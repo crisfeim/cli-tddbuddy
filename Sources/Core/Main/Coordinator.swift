@@ -4,30 +4,23 @@ import Foundation
 
 public class Coordinator {
     
-    public protocol Iterator {
-        func iterate<T>(nTimes n: Int, until condition: (T) -> Bool, action: () async throws -> T) async throws -> T
-    }
-    
     public typealias Output = (generatedCode: String, procesOutput: Runner.ProcessOutput)
    
     private let reader: FileReader
     private let client: Client
     private let runner: Runner
     private let persistor: Persistor
-    private let iterator: Iterator
-    
+    private let iterator = Iterator()
     public init(
         reader: FileReader,
         client: Client,
         runner: Runner,
-        persistor: Persistor,
-        iterator: Iterator
+        persistor: Persistor
     ) {
         self.reader = reader
         self.client = client
         self.runner = runner
         self.persistor = persistor
-        self.iterator = iterator
     }
    
     @discardableResult
