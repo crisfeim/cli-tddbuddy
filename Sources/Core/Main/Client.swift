@@ -3,5 +3,6 @@
 
 public protocol Client {
     typealias Message = [String: String]
+    var model: String {get}
     func send(messages: [Message]) async throws -> String
 }

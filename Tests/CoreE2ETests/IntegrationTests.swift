@@ -21,7 +21,7 @@ class IntegrationTests: XCTestCase {
             If your code fails to compile, the user will provide the error output for you to make adjustments.
             """
         let reader = FileManager.default
-        let client = OllamaClient()
+        let client = OllamaClient(model: "llama3.2")
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
         let sut = Coordinator(
@@ -32,7 +32,7 @@ class IntegrationTests: XCTestCase {
         )
         let adderSpecs = specsURL("adder.swift.txt")
         let tmpURL = FileManager.default.temporaryDirectory.appendingPathComponent("adder.swift.txt")
-        let output = try await sut.generateAndSaveCode(systemPrompt: systemPrompt, specsFileURL: adderSpecs, outputFileURL: tmpURL, maxIterationCount: 5)
+        let output = try await sut.generateAndSaveCode(systemPrompt: systemPrompt, specsFileURL: adderSpecs, outputFileURL: tmpURL, maxIterationCount: 2)
         
         XCTAssertFalse(output.generatedCode.isEmpty)
         XCTAssertEqual(output.procesOutput.exitCode, 0)
