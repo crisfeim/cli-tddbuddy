@@ -133,7 +133,7 @@ class DataGatheringTests: XCTestCase {
         
     }
 
-    func test() async throws {
+    func test_gatherData_recordsExpectedData() async throws {
         struct ClientStub: Client {
             let model: String
             let result: String
