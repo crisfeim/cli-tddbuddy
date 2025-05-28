@@ -7,11 +7,16 @@ class DataGatheringTests: XCTestCase {
     final class IterationRecorder {
         private var date: Date?
         private var code: String?
+        private let currentDate: () -> Date
         var iterations: [DataGatheringTests.Iteration] = []
-
-        func recordGeneratedCode(_ code: String, at date: Date) {
+        
+        init(currentDate: @escaping () -> Date) {
+            self.currentDate = currentDate
+        }
+        
+        func recordGeneratedCode(_ code: String) {
             self.code = code
-            self.date = date
+            self.date = currentDate()
         }
 
         func recordOutput(_ output: Runner.ProcessOutput) {
@@ -69,50 +74,15 @@ class DataGatheringTests: XCTestCase {
         }
         
         func gatherData(systemPrompt: String, specs: Specs, executionCount: Int, iterationCount: Int) async throws -> GatheredData {
-            
-            class ClientSpy: Client {
-                let client: Client
-                
-                init(client: Client, onResponse: @escaping (String) -> Void) {
-                    self.client = client
-                    self.onResponse = onResponse
-                }
-                var model: String {client.model}
-                let onResponse: (String) -> Void
-                func send(messages: [Message]) async throws -> String {
-                    let response = try await client.send(messages: messages)
-                    onResponse(response)
-                    return response
-                }
-            }
-            
-            class RunnerSpy: Runner {
-                let runner: Runner
-                
-                init(runner: Runner, onProcessOutput: @escaping (ProcessOutput) -> Void) {
-                    self.runner = runner
-                    self.onProcessOutput = onProcessOutput
-                }
-                let onProcessOutput: (ProcessOutput) -> Void
-                func run(_ code: String) throws -> ProcessOutput {
-                    let output = try runner.run(code)
-                    onProcessOutput(output)
-                    return output
-                }
-            }
-            
+    
             var executions = [Execution]()
             
             let currentDate = currentDate
             for _ in (1...executionCount) {
                 let initialTimestamp = currentDate()
-                let recorder = IterationRecorder()
-                let clientSpy = ClientSpy(client: client) { [weak recorder] in
-                    recorder?.recordGeneratedCode($0, at: currentDate())
-                }
-                let runnerSpy = RunnerSpy(runner: runner) { [weak recorder] in
-                    recorder?.recordOutput($0)
-                }
+                let recorder = IterationRecorder(currentDate: currentDate)
+                let clientSpy = ClientSpy(client: client, onResult: recorder.recordGeneratedCode)
+                let runnerSpy = RunnerSpy(runner: runner, onResult: recorder.recordOutput)
                 let coordinator = Coordinator(client: clientSpy, runner: runnerSpy)
                 let _ = try await coordinator.generateCode(
                     systemPrompt: systemPrompt,
@@ -129,6 +99,38 @@ class DataGatheringTests: XCTestCase {
            
             return GatheredData(testId: specs.id, modelName: client.model, executions: executions)
         }
+        
+        class ClientSpy: Client {
+            let client: Client
+            
+            init(client: Client, onResult: @escaping (String) -> Void) {
+                self.client = client
+                self.onResponse = onResult
+            }
+            var model: String {client.model}
+            let onResponse: (String) -> Void
+            func send(messages: [Message]) async throws -> String {
+                let response = try await client.send(messages: messages)
+                onResponse(response)
+                return response
+            }
+        }
+        
+        class RunnerSpy: Runner {
+            let runner: Runner
+            
+            init(runner: Runner, onResult: @escaping (ProcessOutput) -> Void) {
+                self.runner = runner
+                self.onProcessOutput = onResult
+            }
+            let onProcessOutput: (ProcessOutput) -> Void
+            func run(_ code: String) throws -> ProcessOutput {
+                let output = try runner.run(code)
+                onProcessOutput(output)
+                return output
+            }
+        }
+        
     }
 
     func test() async throws {
