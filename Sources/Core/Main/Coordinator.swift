@@ -12,10 +12,10 @@ public class Coordinator {
     private let persistor: Persistor
     private let iterator = Iterator()
     public init(
-        reader: FileReader,
+        reader: FileReader = FileManager.default,
         client: Client,
         runner: Runner,
-        persistor: Persistor
+        persistor: Persistor = FilePersistor()
     ) {
         self.reader = reader
         self.client = client
