@@ -41,6 +41,7 @@ extension CoordinatorTests {
     
     struct ClientStub: Client {
         let result: Result<String, Error>
+        var model: String { "any model" }
         func send(messages: [Message]) async throws -> String {
             try result.get()
         }
@@ -57,6 +58,7 @@ extension CoordinatorTests {
     }
     
     struct ClientDummy: Client {
+        var model: String {"any model"}
         func send(messages: [Message]) async throws -> String {
             ""
         }
@@ -79,6 +81,7 @@ extension CoordinatorTests {
 extension CoordinatorTests {
     class ClientSpy: Client {
         var messages = [[Message]]()
+        var model: String {"any model"}
         func send(messages: [Message]) async throws -> String {
             self.messages.append(messages)
             return "any generated code"

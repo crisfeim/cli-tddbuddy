@@ -12,10 +12,10 @@ public class Coordinator {
     private let persistor: Persistor
     private let iterator = Iterator()
     public init(
-        reader: FileReader,
+        reader: FileReader = FileManager.default,
         client: Client,
         runner: Runner,
-        persistor: Persistor
+        persistor: Persistor = FilePersistor()
     ) {
         self.reader = reader
         self.client = client
@@ -26,16 +26,23 @@ public class Coordinator {
     @discardableResult
     public func generateAndSaveCode(systemPrompt: String, specsFileURL: URL, outputFileURL: URL, maxIterationCount: Int = 1) async throws -> Output {
         let specs = try reader.read(specsFileURL)
+        let output = try await generateCode(
+            systemPrompt: systemPrompt,
+            specs: specs,
+            maxIterationCount: maxIterationCount
+        )
+        try persistor.persist(output.generatedCode, outputURL: outputFileURL)
+        return output
+    }
+    
+    public func generateCode(systemPrompt: String, specs: String, maxIterationCount: Int = 1) async throws -> Output {
         var previousOutput: Output?
-        let output = try await iterator.iterate(
+        return try await iterator.iterate(
             nTimes: maxIterationCount,
             until: { previousOutput = $0 ; return isSuccess($0) }
         ) {
             try await self.generateCode(systemPrompt: systemPrompt, from: specs, previous: previousOutput)
         }
-        
-        try persistor.persist(output.generatedCode, outputURL: outputFileURL)
-        return output
     }
     
     private func generateCode(systemPrompt: String, from specs: String, previous: Output?) async throws -> Output {

@@ -18,7 +18,7 @@ struct TDDBuddy: AsyncParsableCommand {
     var iterations: Int = 5
 
     func run() async throws {
-        let client = OllamaClient()
+        let client = OllamaClient(model: "llama3.2")
         let runner = LoggerDecorator(SwiftRunner())
         let persistor = LoggerDecorator(FilePersistor())
 

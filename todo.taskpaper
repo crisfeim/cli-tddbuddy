@@ -2,3 +2,4 @@
 - Test CLI through `TDDBuddy.main() ` testing.
 - Allow persisting attempts with logs.
 - Add more LLM Clients and allow customization from command line.
+- Add memory leak tracking

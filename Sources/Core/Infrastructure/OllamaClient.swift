@@ -4,9 +4,9 @@
 import Foundation
 
 public struct OllamaClient: Client {
-    private let model = "llama3.2"
+    public let model: String
     private let url = "http://localhost:11434/api/chat"
-    public init() {}
+    public init(model: String) {self.model = model}
     public func send(messages: [Message]) async throws -> String {
         let url = URL(string: url)!
         var request = URLRequest(url: url)
